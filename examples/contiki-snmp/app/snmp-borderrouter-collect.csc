@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <simconf>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/mrm</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/mspsim</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/avrora</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/serial_socket</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/collect-view</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/powertracker</project>
+  <project EXPORT="discard">[APPS_DIR]/mrm</project>
+  <project EXPORT="discard">[APPS_DIR]/mspsim</project>
+  <project EXPORT="discard">[APPS_DIR]/avrora</project>
+  <project EXPORT="discard">[APPS_DIR]/serial_socket</project>
+  <project EXPORT="discard">[APPS_DIR]/collect-view</project>
+  <project EXPORT="discard">[APPS_DIR]/powertracker</project>
   <simulation>
     <title>My simulation</title>
     <speedlimit>1.0</speedlimit>
@@ -25,9 +25,9 @@
       se.sics.cooja.mspmote.SkyMoteType
       <identifier>sky1</identifier>
       <description>Sky Mote Type #sky1</description>
-      <source EXPORT="discard">[CONTIKI_DIR]/examples/ipv6/rpl-border-router/border-router.c</source>
+      <source EXPORT="discard">/home/nqdinh/workspace/cont/examples/ipv6/border-router-noweb/border-router.c</source>
       <commands EXPORT="discard">make border-router.sky TARGET=sky</commands>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/ipv6/rpl-border-router/border-router.sky</firmware>
+      <firmware EXPORT="copy">/home/nqdinh/workspace/cont/examples/ipv6/border-router-noweb/border-router.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.IPAddress</moteinterface>
@@ -48,9 +48,9 @@
       se.sics.cooja.mspmote.SkyMoteType
       <identifier>sky2</identifier>
       <description>Sky Mote Type #sky2</description>
-      <source EXPORT="discard">[CONTIKI_DIR]/examples/contiki-snmp/app/snmp-server.c</source>
-      <commands EXPORT="discard">make snmp-server.sky TARGET=sky MIB_INIT=mib-init.c</commands>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/contiki-snmp/app/snmp-server.sky</firmware>
+      <source EXPORT="discard">[CONFIG_DIR]/snmp-server.c</source>
+      <commands EXPORT="discard">make snmp-server.sky TARGET=sky</commands>
+      <firmware EXPORT="copy">[CONFIG_DIR]/snmp-server.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.IPAddress</moteinterface>
@@ -71,8 +71,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>4.485027235624045</x>
-        <y>56.01337542058393</y>
+        <x>67.75307352768226</x>
+        <y>49.85674013733171</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -85,8 +85,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>43.996463085573716</x>
-        <y>70.24498264615822</y>
+        <x>19.557068536167204</x>
+        <y>16.79474637503636</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -99,13 +99,41 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>58.60258629076838</x>
-        <y>41.78176819500963</y>
+        <x>52.240456323741746</x>
+        <y>7.33551284539905</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
         se.sics.cooja.mspmote.interfaces.MspMoteID
         <id>3</id>
+      </interface_config>
+      <motetype_identifier>sky2</motetype_identifier>
+    </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        se.sics.cooja.interfaces.Position
+        <x>81.18138069259653</x>
+        <y>12.645067284256427</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        se.sics.cooja.mspmote.interfaces.MspMoteID
+        <id>4</id>
+      </interface_config>
+      <motetype_identifier>sky2</motetype_identifier>
+    </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        se.sics.cooja.interfaces.Position
+        <x>50.75641476255859</x>
+        <y>36.35254550202797</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        se.sics.cooja.mspmote.interfaces.MspMoteID
+        <id>5</id>
       </interface_config>
       <motetype_identifier>sky2</motetype_identifier>
     </mote>
@@ -125,10 +153,10 @@
       <skin>se.sics.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>5.34022607533937 0.0 0.0 5.34022607533937 -8.951059392286776 -140.1240879887756</viewport>
+      <viewport>4.294961792713784 0.0 0.0 4.294961792713784 12.00313785967696 -1.1327939990994857</viewport>
     </plugin_config>
     <width>400</width>
-    <z>4</z>
+    <z>1</z>
     <height>400</height>
     <location_x>1</location_x>
     <location_y>1</location_y>
@@ -139,8 +167,8 @@
       <filter />
     </plugin_config>
     <width>966</width>
-    <z>2</z>
-    <height>379</height>
+    <z>5</z>
+    <height>240</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
   </plugin>
@@ -150,6 +178,8 @@
       <mote>0</mote>
       <mote>1</mote>
       <mote>2</mote>
+      <mote>3</mote>
+      <mote>4</mote>
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />
@@ -157,7 +187,7 @@
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
     <width>1366</width>
-    <z>5</z>
+    <z>4</z>
     <height>166</height>
     <location_x>0</location_x>
     <location_y>555</location_y>
@@ -169,7 +199,7 @@
       <decorations>true</decorations>
     </plugin_config>
     <width>686</width>
-    <z>1</z>
+    <z>3</z>
     <height>160</height>
     <location_x>680</location_x>
     <location_y>0</location_y>
@@ -178,10 +208,10 @@
     SerialSocketServer
     <mote_arg>0</mote_arg>
     <width>422</width>
-    <z>3</z>
+    <z>2</z>
     <height>69</height>
-    <location_x>16</location_x>
-    <location_y>446</location_y>
+    <location_x>257</location_x>
+    <location_y>448</location_y>
   </plugin>
 </simconf>
 

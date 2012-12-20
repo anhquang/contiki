@@ -1,4 +1,3 @@
-TARGET=native
 PROJECT=snmp-server
 
 UIP_CONF_IPV6=1
@@ -6,18 +5,23 @@ WITH_UIP6=1
 
 APPS=snmpd 
 
-CONTIKI=/home/nqdinh/workspace/contiki-2.6
+CONTIKI=../../..
 include $(CONTIKI)/Makefile.include
+
+#linker optimizations
+SMALL=1
+
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 
 #CFLAGS   += -DENABLE_SNMPv1
 #CFLAGS   += -DENABLE_SNMPv3
 
 econotag:
-	make TARGET=redbee-econotag MIB_INIT=mib-init.c snmp-server.elf
-	
+	make TARGET=econotag MIB_INIT=mib-init.c snmp-server.elf
+
 sky: 
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
-	
+
 minimal-net: 
 	make TARGET=minimal-net MIB_INIT=mib-init.c $(PROJECT).minimal-net
 
@@ -50,7 +54,7 @@ cl-all:
 	rm -rf obj_avr-raven
 	rm -rf obj_minimal-net
 	rm $(PROJECT).minimal-net
-	
+
 cl-minnet:
 	make TARGET=minimal-net clean
 	rm -rf obj_native

@@ -62,7 +62,7 @@ extern uip_ds6_route_t uip_ds6_routing_table[];
 static uip_ipaddr_t prefix;
 static uint8_t prefix_set;
 
-static struct uip_udp_conn *server_conn, *snmpd_conn;
+static struct uip_udp_conn *server_conn;
 #define SA_SER_PORT 3001
 #define SNMPD_PORT	3003
 #define MAX_PAYLOAD_LEN 128
@@ -272,11 +272,11 @@ ipaddr_add(const uip_ipaddr_t *addr)
   }
 }
 /*---------------------------------------------------------------------------*/
-void yield_routing_info(void) {
-	int i;
-	//neighbor
-#ifdef LONG_SNMP_ASS
+void yield_routing_info() {
+
 	//TODO: hey, this long answer back require a fragment in reply (by breaking into sequence of line)
+#ifdef LONG_SNMP_ASS
+	int i;
 	ADD("{");
 	ADD("'Neighbor':(");
 	for (i=0; i<UIP_DS6_NBR_NB; i++){
@@ -309,13 +309,13 @@ void yield_routing_info(void) {
 	ADD("}");
 #else
 	//TODO: this is not a robust way to sent reply, a fragment (by sending line in sequence) would be better
+
+	uip_ds6_route_t *r;
 	ADD("{'Router':[");
-	for (i=0; i<UIP_DS6_ROUTE_NB; i++){
-		if(uip_ds6_routing_table[i].isused) {
-			ADD("'");
-			ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
-			ADD("',");
-		}
+	for(r = uip_ds6_route_list_head(); r != NULL; r = list_item_next(r)) {
+		ADD("'");
+		ipaddr_add(&r->ipaddr);
+		ADD("',");
 	}
 	ADD("]}");
 #endif
