@@ -1,0 +1,2 @@
+getaddrinfo:  No address associated with hostname
+snmpget: Protocol error (Expected RESPONSE-PDU but got GET-PDU)

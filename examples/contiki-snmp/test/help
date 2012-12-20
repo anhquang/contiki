@@ -1,0 +1,3 @@
+snmpget -v 3 -l AuthPriv -u sk -a MD5 -A password1 -x AES -X password2 udp6:[aaaa::206:98ff:fe00:232] sysName.0 sysName.0
+
+
