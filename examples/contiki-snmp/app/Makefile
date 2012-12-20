@@ -22,6 +22,9 @@ econotag:
 sky: 
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
 
+avr-atmega128rfa1:
+	make TARGET=avr-atmega128rfa1 MIB_INIT=mib-init.c $(PROJECT).elf
+
 minimal-net: 
 	make TARGET=minimal-net MIB_INIT=mib-init.c $(PROJECT).minimal-net
 

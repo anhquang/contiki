@@ -97,7 +97,7 @@ static void udp_handler(process_event_t ev, process_data_t data)
         }
         #else
 
-        if (dispatch((u8_t*)uip_appdata, uip_datalen(), response, &resp_len, MAX_BUF_SIZE) != ERR_NO_ERROR) {
+        if (dispatch((uint8_t*)uip_appdata, uip_datalen(), response, &resp_len, MAX_BUF_SIZE) != ERR_NO_ERROR) {
             udpconn->rport = 0;
             memset(&udpconn->ripaddr, 0, sizeof(udpconn->ripaddr));
             return;
