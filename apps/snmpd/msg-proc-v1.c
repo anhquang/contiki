@@ -50,6 +50,7 @@ s8t prepareDataElements_v1(u8t* const input, const u16t input_len, u16t* pos, me
 
     /* decode the PDU */
     s8t ret = ber_decode_pdu(input, input_len, pos, &request->pdu);
+
     TRY(ret);
 
     /* if we ran out of memory send a general error */

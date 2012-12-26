@@ -8,10 +8,9 @@ APPS=snmpd
 CONTIKI=../../..
 include $(CONTIKI)/Makefile.include
 
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 #linker optimizations
 SMALL=1
-
-CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 
 #CFLAGS   += -DENABLE_SNMPv1
 #CFLAGS   += -DENABLE_SNMPv3
@@ -20,6 +19,7 @@ econotag:
 	make TARGET=econotag MIB_INIT=mib-init.c snmp-server.elf
 
 sky: 
+#	CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
 
 avr-atmega128rfa1:

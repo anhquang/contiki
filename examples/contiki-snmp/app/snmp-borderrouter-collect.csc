@@ -49,7 +49,7 @@
       <identifier>sky2</identifier>
       <description>Sky Mote Type #sky2</description>
       <source EXPORT="discard">[CONFIG_DIR]/snmp-server.c</source>
-      <commands EXPORT="discard">make snmp-server.sky TARGET=sky</commands>
+      <commands EXPORT="discard">make snmp-server.sky TARGET=sky MIB_INIT=mib-init.c</commands>
       <firmware EXPORT="copy">[CONFIG_DIR]/snmp-server.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
@@ -71,8 +71,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>67.75307352768226</x>
-        <y>49.85674013733171</y>
+        <x>76.39364198426026</x>
+        <y>40.454143699069675</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -85,8 +85,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>19.557068536167204</x>
-        <y>16.79474637503636</y>
+        <x>44.1419826448662</x>
+        <y>0.852936091000267</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -99,8 +99,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>52.240456323741746</x>
-        <y>7.33551284539905</y>
+        <x>31.228265145569132</x>
+        <y>30.26393681007771</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -113,8 +113,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>81.18138069259653</x>
-        <y>12.645067284256427</y>
+        <x>58.13239136759393</x>
+        <y>29.11957435079402</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -127,8 +127,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>50.75641476255859</x>
-        <y>36.35254550202797</y>
+        <x>29.738722697166033</x>
+        <y>13.295787855125308</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -141,7 +141,7 @@
   <plugin>
     se.sics.cooja.plugins.SimControl
     <width>280</width>
-    <z>0</z>
+    <z>2</z>
     <height>160</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
@@ -153,7 +153,7 @@
       <skin>se.sics.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>4.294961792713784 0.0 0.0 4.294961792713784 12.00313785967696 -1.1327939990994857</viewport>
+      <viewport>6.352248399358329 0.0 0.0 6.352248399358329 -171.27139001567045 18.025230440172823</viewport>
     </plugin_config>
     <width>400</width>
     <z>1</z>
@@ -167,8 +167,8 @@
       <filter />
     </plugin_config>
     <width>966</width>
-    <z>5</z>
-    <height>240</height>
+    <z>0</z>
+    <height>271</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
   </plugin>
@@ -187,7 +187,7 @@
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
     <width>1366</width>
-    <z>4</z>
+    <z>5</z>
     <height>166</height>
     <location_x>0</location_x>
     <location_y>555</location_y>
@@ -199,7 +199,7 @@
       <decorations>true</decorations>
     </plugin_config>
     <width>686</width>
-    <z>3</z>
+    <z>4</z>
     <height>160</height>
     <location_x>680</location_x>
     <location_y>0</location_y>
@@ -208,10 +208,10 @@
     SerialSocketServer
     <mote_arg>0</mote_arg>
     <width>422</width>
-    <z>2</z>
+    <z>3</z>
     <height>69</height>
-    <location_x>257</location_x>
-    <location_y>448</location_y>
+    <location_x>180</location_x>
+    <location_y>447</location_y>
   </plugin>
 </simconf>
 
