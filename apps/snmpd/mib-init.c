@@ -7,6 +7,10 @@
 
 #include "net/rime.h"
 
+#if SIMULATION
+#include "lib/random.h"
+#endif
+
 #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
 #include <avr/pgmspace.h>
 #else
@@ -448,7 +452,11 @@ s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len) {
     	//TODO: update sensor value from sensor
     	//here, i set a static value, for debugging purpose only
     	object->varbind.value_type = BER_TYPE_INTEGER;
-		object->varbind.value.i_value = oid_el2;
+#if SIMULATION
+   		object->varbind.value.i_value = random_rand()%10;
+#else
+   		object->varbind.value.i_value = oid_el2;
+#endif
     	break;
     case entPhySensorOperStatus:
     	//TODO: update sensor status from current condition of sensor

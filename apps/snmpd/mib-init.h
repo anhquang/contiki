@@ -40,5 +40,7 @@ s8t mib_init();
 #define IANAIFTYPE_MIB_IEEE802154 	259
 #define MTU_IEEE802154				127
 #define SPEED_IEEE802154			250000
+
+#define SIMULATION			1
 #endif	/* __MIBINIT_H__ */
 
