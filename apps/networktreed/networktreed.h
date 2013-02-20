@@ -23,25 +23,27 @@ PROCESS_NAME(networktreed_process);
 #define VERSION_01	1
 
 #define REQUEST		0
-#define RESPONSE	1
+#define FORCEREQUEST		1
+#define RESPONSE	2
+
+#define MAX_BUF_SIZE	484		//TODO: verify this number
+
+#define FAILURE			-1
+#define ERR_NO_ERROR	0
+#define ERR_MEMORY_ALLOCATION	1
 
 //struct of address displace each hop a packet traveled through
-struct address_t{
-	u8_t hopcount;
-	//address
-	struct address_t *next_ptr;
-};
 
-struct hops_chain_t{
-	u8_t hopnumber;
-	struct address_t *address_object;
-};
+typedef union varbind_t {
+	uip_ipaddr_t parentaddr;
+	u16_t gwrport;				//gateway remote port
+} varbind_t;
 
 struct networktree_object_t {
 	u8_t version;
 	u8_t type;
 	u8_t id;
-	struct hops_chain_t	*hops_chain_object;
-};
+	struct varbind_t varbind_object;
+} networktree_object_t;
 
 #endif

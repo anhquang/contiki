@@ -24,15 +24,30 @@
 /* UDP connection */
 static struct uip_udp_conn *udpconn;
 
-PROCESS(networktreed_process, "NetworkTree process");
-AUTOSTART_PROCESSES(&networktreed_process);
+#define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
+
+PROCESS(networktreed_process, "NetworkTree daemon process");
 
 static void udp_handler(process_event_t ev, process_data_t data){
+	u16_t resp_len;
+	u8_t response[MAX_BUF_SIZE];
+	struct uip_udp_conn *replyconn;
+
+
 	PRINTF("receive request. default router is: ");
+
 	uip_ipaddr_t *addr;
 	addr = uip_ds6_defrt_choose();
 	PRINT6ADDR(addr);
 	PRINTF("\n");
+
+	if (ev == tcpip_event && uip_newdata()){
+		nwkgraph_processing((uint8_t*)uip_appdata, uip_datalen(), udpconn);		//change this name
+
+		//change udpconn stage (ripaddr and rport)
+		uip_ipaddr_copy(&udpconn->ripaddr, &uip_ds6_defrt_choose());
+		udpconn->rport = UDP_IP_BUF->srcport;
+	}
 }
 
 /*-----------------------------------------------------------------------------------*/
