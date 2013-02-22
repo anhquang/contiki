@@ -15,7 +15,8 @@
 
 #include "contiki-net.h"
 #include "net/uip-ds6.h"
-/** \brief NetworkTree process */
+
+
 PROCESS_NAME(networktreed_process);
 
 #define LISTEN_PORT	1200
@@ -26,24 +27,29 @@ PROCESS_NAME(networktreed_process);
 #define FORCEREQUEST		1
 #define RESPONSE	2
 
-#define MAX_BUF_SIZE	484		//TODO: verify this number
+#define MAX_BUF_SIZE	30		//TODO: verify this number
 
 #define FAILURE			-1
 #define ERR_NO_ERROR	0
 #define ERR_MEMORY_ALLOCATION	1
 
 //struct of address displace each hop a packet traveled through
+typedef struct {
+	u16_t mnrport;
+	uip_ipaddr_t mnaddr;
+} forcereq_data_t;
 
-typedef union varbind_t {
+typedef union {
 	uip_ipaddr_t parentaddr;
-	u16_t gwrport;				//gateway remote port
+	u16_t mnrport;				//management remote port
+	forcereq_data_t forcereq_data;
 } varbind_t;
 
-struct networktree_object_t {
+typedef struct{
 	u8_t version;
-	u8_t type;
 	u8_t id;
-	struct varbind_t varbind_object;
+	u8_t type;
+	varbind_t varbind_object;
 } networktree_object_t;
 
 #endif

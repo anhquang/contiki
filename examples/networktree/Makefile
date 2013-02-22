@@ -12,3 +12,5 @@ CONTIKI=../..
 include $(CONTIKI)/Makefile.include
 
 SMALL=1
+sky:
+	make TARGET=sky networktree

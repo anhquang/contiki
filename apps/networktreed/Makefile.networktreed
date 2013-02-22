@@ -1,1 +1,1 @@
-networktreed_src = networktreed.c
+networktreed_src = networktreed.c nwktr-dispatcher.c
