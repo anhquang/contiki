@@ -1,9 +1,17 @@
 /*
- * dispatcher.c
- *
- *  Created on: Feb 20, 2013
- *      Author: nqdinh
+ * Copyright (c) Feb 2012, Nguyen Quoc Dinh
+ * All rights reserved.
  */
+
+
+/**
+ * \file
+ *         dispatcher for network tree daemon
+ * \author
+ *         Nguyen Quoc Dinh <nqdinh@hui.edu.vn>
+ */
+
+
 #include <stdlib.h>
 #include <string.h>
 #include "networktreed.h"
@@ -72,14 +80,23 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		PRINT6ADDR(uip_ds6_defrt_choose());
 		PRINTF("\n");
 		//send reply to management host
-		uip_udp_packet_sendto(udpconn, response, responselen, uip_ds6_defrt_choose(), LISTEN_PORT);
+		uip_udp_packet_sendto(udpconn, response, responselen, uip_ds6_defrt_choose(), UIP_HTONS(LISTEN_PORT));
 
 		break;
 
 	case FORCEREQUEST:
-		PRINTF("Receive forcerequest from");
+		PRINTF("Receive forcerequest from ");
 		PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
 		PRINTF("\n");
+
+		srcport = (u16_t)(((u16_t)(input[pos]) << 8) | ((u16_t)(input[pos+1])));
+		pos = pos + 2;
+
+		nwktree.type = RESPONSE;
+
+		/* prepare RESPONSE data */
+		cont here
+
 		break;
 	case RESPONSE:
 		break;

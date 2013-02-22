@@ -21,14 +21,40 @@
 
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
+//debug
+#include "net/rpl/rpl.h"
 
 /* UDP connection */
 static struct uip_udp_conn *udpconn;
 
 PROCESS(networktreed_process, "NetworkTree daemon process");
 
+/*
+void
+collect_common_net_print(void)
+{
+  rpl_dag_t *dag;
+  uip_ds6_route_t *r;
+
+   //Let's suppose we have only one instance
+  dag = rpl_get_any_dag();
+  if(dag->preferred_parent != NULL) {
+    PRINTF("Preferred parent: ");
+    PRINT6ADDR(&dag->preferred_parent->addr);
+    PRINTF("\n");
+  }
+  for(r = uip_ds6_route_list_head();
+      r != NULL;
+      r = list_item_next(r)) {
+    PRINT6ADDR(&r->ipaddr);
+  }
+  PRINTF("---\n");
+}
+*/
 static void udp_handler(process_event_t ev, process_data_t data){
 	char rst;
+	//collect_common_net_print();
+
 	if (ev == tcpip_event && uip_newdata()){
 		rst = nwkgraph_processing((uint8_t*)uip_appdata, uip_datalen(), udpconn);		//change this name
 
