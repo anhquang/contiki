@@ -10,6 +10,14 @@ import json
 import ast
 import struct
 
+MNPORT = 10000
+class NetworkTree:
+    def __init__(self, version=None, id=None, type=None, data=None):
+        self.version = version
+        self.id = id
+        self.type = type
+        self.data = data
+
 def main(hostname):
     MAX = 128
     PORT = 1200
@@ -22,8 +30,8 @@ def main(hostname):
     print 'Client socket name is', s.getsockname()
     delay = 1
 
-    data = [1, 20, 0, 20, 20]
-    packet = struct.Struct('5b')
+    data = [1, 20, 0, MNPORT]
+    packet = struct.Struct('!3b H')
     packed_data = packet.pack(*data)
 
     while True:

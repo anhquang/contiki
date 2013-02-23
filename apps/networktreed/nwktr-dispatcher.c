@@ -26,7 +26,7 @@
  *
  */
 char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_udp_conn* const udpconn) {
-	u8_t pos;
+	u8_t pos=0;
 	u16_t srcport;
 	u8_t responselen;
 	networktree_object_t nwktree;
@@ -34,8 +34,6 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 
 	uip_ipaddr_t mnaddr;
 	u8_t i;
-
-	pos = 0;
 
 	if ((u8_t)input[pos++] != VERSION_01) {
 		return FAILURE;
@@ -51,9 +49,8 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		//sensor receive request from the management host
 		uip_ipaddr_copy(&mnaddr, &UDP_IP_BUF->srcipaddr);
 
-		nwktree.type = RESPONSE;
-
 		/* prepare RESPONSE data */
+		nwktree.type = RESPONSE;
 		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object, uip_ds6_defrt_choose()); //then call nwkgraph_prepare_respacket_data_addr
 		/* prepare RESPONSE buffer */
 		if (nwkgraph_prepare_respacket_header(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
@@ -65,15 +62,16 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
 		PRINTF("\n");
 		//send reply to management host
-		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, srcport);
+		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, UIP_HTONS(srcport));
 
 		/* send force-request to my parent
 		 * data for this protocol contain
 		 * (1) manager remote port (which mentioned in request data
 		 * (2) manager address
 		 */
-		nwktree.type = FORCEREQUEST;
+
 		/* prepare FORCEREQUEST data */
+		nwktree.type = FORCEREQUEST;
 		nwktree.varbind_object.forcereq_data.mnrport = srcport;
 		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object.forcereq_data.mnaddr, &mnaddr);
 		/* prepare FORCEREQUEST buffer */
@@ -91,7 +89,7 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		break;
 
 	case FORCEREQUEST:
-
+		//the source and addr of manager are included in the input
 		srcport = (u16_t)(((u16_t)(input[pos]) << 8) | ((u16_t)(input[pos+1])));
 		pos = pos + 2;
 		for (i=0; i<16; i++)
@@ -114,10 +112,12 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		PRINTF("\n");
 
 		//send reply to management host
-		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, srcport);
+		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, UIP_HTONS(srcport));
 
 		break;
 	case RESPONSE:
+		//sensor node should not receive a response
+		PRINTF("WARNING: a sensor should not receive RESPONSE pkg\n");
 		break;
 	default:
 		return FAILURE;
