@@ -32,6 +32,9 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 	networktree_object_t nwktree;
 	u8_t response[MAX_BUF_SIZE];
 
+	uip_ipaddr_t mnaddr;
+	u8_t i;
+
 	pos = 0;
 
 	if ((u8_t)input[pos++] != VERSION_01) {
@@ -42,14 +45,17 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 
 	switch ((u8_t)input[pos++]) {
 	case REQUEST:
+		//the source port of sender (manager) is mentioned in data of the request
 		srcport = (u16_t)(((u16_t)(input[pos]) << 8) | ((u16_t)(input[pos+1])));
 		pos = pos + 2; //end of data for this request
+		//sensor receive request from the management host
+		uip_ipaddr_copy(&mnaddr, &UDP_IP_BUF->srcipaddr);
 
 		nwktree.type = RESPONSE;
 
 		/* prepare RESPONSE data */
 		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object, uip_ds6_defrt_choose()); //then call nwkgraph_prepare_respacket_data_addr
-
+		/* prepare RESPONSE buffer */
 		if (nwkgraph_prepare_respacket_header(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
 			return FAILURE;
 		if (nwkgraph_prepare_respacket_data_addr(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
@@ -59,7 +65,7 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
 		PRINTF("\n");
 		//send reply to management host
-		uip_udp_packet_sendto(udpconn, response, responselen, &UDP_IP_BUF->srcipaddr, srcport);
+		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, srcport);
 
 		/* send force-request to my parent
 		 * data for this protocol contain
@@ -69,7 +75,7 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		nwktree.type = FORCEREQUEST;
 		/* prepare FORCEREQUEST data */
 		nwktree.varbind_object.forcereq_data.mnrport = srcport;
-		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object.forcereq_data.mnaddr, &UDP_IP_BUF->srcipaddr);
+		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object.forcereq_data.mnaddr, &mnaddr);
 		/* prepare FORCEREQUEST buffer */
 		if (nwkgraph_prepare_respacket_header(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
 			return FAILURE;
@@ -85,17 +91,30 @@ char nwkgraph_processing(u8_t* const input, const u16_t input_len, struct uip_ud
 		break;
 
 	case FORCEREQUEST:
-		PRINTF("Receive forcerequest from ");
-		PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
-		PRINTF("\n");
 
 		srcport = (u16_t)(((u16_t)(input[pos]) << 8) | ((u16_t)(input[pos+1])));
 		pos = pos + 2;
+		for (i=0; i<16; i++)
+			mnaddr.u8[i] = input[pos++];
 
 		nwktree.type = RESPONSE;
 
 		/* prepare RESPONSE data */
-		cont here
+		uip_ipaddr_copy((uip_ipaddr_t*)&nwktree.varbind_object, uip_ds6_defrt_choose()); //then call nwkgraph_prepare_respacket_data_addr
+		/* prepare RESPONSE buffer */
+		if (nwkgraph_prepare_respacket_header(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
+			return FAILURE;
+		if (nwkgraph_prepare_respacket_data_addr(&nwktree, response, &responselen, MAX_BUF_SIZE) != ERR_NO_ERROR)
+			return FAILURE;
+
+		PRINTF("Receive forcerequest from ");
+		PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
+		PRINTF(", then reply to man at ");
+		PRINT6ADDR(&mnaddr);
+		PRINTF("\n");
+
+		//send reply to management host
+		uip_udp_packet_sendto(udpconn, response, responselen, &mnaddr, srcport);
 
 		break;
 	case RESPONSE:

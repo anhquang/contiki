@@ -34,7 +34,7 @@ def main(hostname):
             data, address = s.recvfrom(MAX)
         except socket.timeout:
             delay *= 2  # wait even longer for the next request
-            if delay > 2:
+            if delay > 1.5:
                 raise RuntimeError('I think the server is down')
         else:
             break   # we are done, and can stop looping
