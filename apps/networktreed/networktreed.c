@@ -21,8 +21,6 @@
 
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
-//debug
-#include "net/rpl/rpl.h"
 
 /* UDP connection */
 static struct uip_udp_conn *udpconn;
