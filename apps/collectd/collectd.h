@@ -24,20 +24,30 @@
 #else
 #include "dev/uart1.h"
 #endif
-#include "collect-common.h"
 #include "collect-view.h"
 
-PROCESS_NAME(collectd_process);
+PROCESS_NAME(collectd_client_process);
+PROCESS_NAME(collectd_sending_process);
 
 #define COLLECTD_CLIENT_PORT 8775
 
 #define VERSION_01	1
 
 #define REQUEST		0
-#define FORCEREQUEST		1
-#define RESPONSE	2
+#define RESPONSE	1
 
-#define MAX_BUF_SIZE	30		//TODO: verify this number
+#define COMMAND_START	1
+#define COMMAND_STOP	0
+
+#define SEND_ACTIVE_NO	COMMAND_STOP
+#define SEND_ACTIVE_YES	COMMAND_START
+
+#ifndef DEFAULT_UPDATE_PERIOD
+#define DEFAULT_UPDATE_PERIOD 60
+#endif
+#define RANDWAIT (DEFAULT_UPDATE_PERIOD)
+
+#define MAX_BUF_SIZE	300		//TODO: verify this number
 
 #define FAILURE			-1
 #define ERR_NO_ERROR	0
@@ -45,21 +55,22 @@ PROCESS_NAME(collectd_process);
 
 //struct of address displace each hop a packet traveled through
 typedef struct {
-	u16_t mnrport;
-	uip_ipaddr_t mnaddr;
-} forcereq_data_t;
+	u8_t	send_active;
+	u8_t	update_freq_in_sec;
+	u16_t 	mnrport;
+	uip_ipaddr_t	mnaddr;
+} collectd_conf_t;
 
-typedef union {
-	uip_ipaddr_t parentaddr;
-	u16_t mnrport;				//management remote port
-	forcereq_data_t forcereq_data;
-} varbind_t;
+typedef struct {
+	u8_t seqno;
+	struct collect_view_data_msg collect_data;
+} response_data_t;
 
 typedef struct{
 	u8_t version;
 	u8_t id;
 	u8_t type;
-	varbind_t varbind_object;
-} networktree_object_t;
+	response_data_t respdata;
+} collectd_object_t;
 
 #endif

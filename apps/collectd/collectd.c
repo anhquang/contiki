@@ -37,133 +37,40 @@
 #include <stdio.h>
 #include <string.h>
 #include "collectd.h"
+#include "colld-dispatcher.h"
 
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 static struct uip_udp_conn *client_conn;
-static uip_ipaddr_t server_ipaddr;
+static collectd_conf_t collectd_conf;
 
 /*---------------------------------------------------------------------------*/
-PROCESS(collectd_process, "UDP client process");
-AUTOSTART_PROCESSES(&collect_common_process);
-/*---------------------------------------------------------------------------*/
-void
-collect_common_set_sink(void)
-{
-  /* A udp client can never become sink */
-}
-/*---------------------------------------------------------------------------*/
-extern uip_ds6_route_t uip_ds6_routing_table[UIP_DS6_ROUTE_NB];
+PROCESS(collectd_client_process, "Collectd client process");
+PROCESS(collectd_sending_process, "Collectd sending process");
+//AUTOSTART_PROCESSES(&collect_common_process);
+//AUTOSTART_PROCESSES(&collect_common_process);
 
-void
-collect_common_net_print(void)
-{
-  rpl_dag_t *dag;
-  uip_ds6_route_t *r;
-
-  /* Let's suppose we have only one instance */
-  dag = rpl_get_any_dag();
-  if(dag->preferred_parent != NULL) {
-    PRINTF("Preferred parent: ");
-    PRINT6ADDR(&dag->preferred_parent->addr);
-    PRINTF("\n");
-  }
-  for(r = uip_ds6_route_list_head();
-      r != NULL;
-      r = list_item_next(r)) {
-    PRINT6ADDR(&r->ipaddr);
-  }
-  PRINTF("---\n");
-}
 /*---------------------------------------------------------------------------*/
 static void collectd_udp_handler(void) {
 	  if(uip_newdata()) {
-		/* Ignore incoming data */
+		  char rst;
+		  rst = collectd_processing((uint8_t*)uip_appdata, uip_datalen(), &collectd_conf);
+		  PRINTF("Collectd udp handler return with %d\n", rst);
 	  }
 }
 /*---------------------------------------------------------------------------*/
-void
-collect_common_send(void)
-{
-  static uint8_t seqno;
-  struct {
-    uint8_t seqno;
-    uint8_t for_alignment;
-    struct collect_view_data_msg msg;
-  } msg;
-  /* struct collect_neighbor *n; */
-  uint16_t parent_etx;
-  uint16_t rtmetric;
-  uint16_t num_neighbors;
-  uint16_t beacon_interval;
-  rpl_parent_t *preferred_parent;
-  rimeaddr_t parent;
-  rpl_dag_t *dag;
-
-  if(client_conn == NULL) {
-    /* Not setup yet */
-    return;
-  }
-  memset(&msg, 0, sizeof(msg));
-  seqno++;
-  if(seqno == 0) {
-    /* Wrap to 128 to identify restarts */
-    seqno = 128;
-  }
-  msg.seqno = seqno;
-
-  rimeaddr_copy(&parent, &rimeaddr_null);
-  parent_etx = 0;
-
-  /* Let's suppose we have only one instance */
-  dag = rpl_get_any_dag();
-  if(dag != NULL) {
-    preferred_parent = dag->preferred_parent;
-    if(preferred_parent != NULL) {
-      uip_ds6_nbr_t *nbr;
-      nbr = uip_ds6_nbr_lookup(&preferred_parent->addr);
-      if(nbr != NULL) {
-        /* Use parts of the IPv6 address as the parent address, in reversed byte order. */
-        parent.u8[RIMEADDR_SIZE - 1] = nbr->ipaddr.u8[sizeof(uip_ipaddr_t) - 2];
-        parent.u8[RIMEADDR_SIZE - 2] = nbr->ipaddr.u8[sizeof(uip_ipaddr_t) - 1];
-        parent_etx = neighbor_info_get_metric((rimeaddr_t *) &nbr->lladdr) / 2;
-      }
-    }
-    rtmetric = dag->rank;
-    beacon_interval = (uint16_t) ((2L << dag->instance->dio_intcurrent) / 1000);
-    num_neighbors = RPL_PARENT_COUNT(dag);
-  } else {
-    rtmetric = 0;
-    beacon_interval = 0;
-    num_neighbors = 0;
-  }
-
-  /* num_neighbors = collect_neighbor_list_num(&tc.neighbor_list); */
-  collect_view_construct_message(&msg.msg, &parent,
-                                 parent_etx, rtmetric,
-                                 num_neighbors, beacon_interval);
-
-  uip_udp_packet_sendto(client_conn, &msg, sizeof(msg),
-                        &server_ipaddr, UIP_HTONS(UDP_SERVER_PORT));
+void collectd_conf_init(collectd_conf_t *conf){
+	conf->send_active = SEND_ACTIVE_NO;
+	conf->update_freq_in_sec = DEFAULT_UPDATE_PERIOD;	//this value may update via snmp
 }
-
 /*---------------------------------------------------------------------------*/
-void
-collect_common_net_init(void)
-{
-#if CONTIKI_TARGET_Z1
-  uart0_set_input(serial_line_input_byte);
-#else
-  uart1_set_input(serial_line_input_byte);
-#endif
-  serial_line_init();
-}
 
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(collectd_process, ev, data)
+PROCESS_THREAD(collectd_client_process, ev, data)
 {
 	PROCESS_BEGIN();
+
+	collectd_conf_init(&collectd_conf);
 
 	/* new connection with remote host */
 	client_conn = udp_new(NULL, UIP_HTONS(0), NULL);
@@ -175,6 +82,33 @@ PROCESS_THREAD(collectd_process, ev, data)
 		PROCESS_YIELD();
 		if(ev == tcpip_event) {
 			collectd_udp_handler();
+		}
+	}
+
+	PROCESS_END();
+}
+/*---------------------------------------------------------------------------*/
+
+PROCESS_THREAD(collectd_sending_process, ev, data)
+{
+	static struct etimer period_timer, wait_timer;
+	PROCESS_BEGIN();
+	/* Send a packet every 60-62 seconds. */
+	etimer_set(&period_timer, CLOCK_SECOND * DEFAULT_UPDATE_PERIOD);
+
+	while(1) {
+		PROCESS_WAIT_EVENT();
+		if(ev == PROCESS_EVENT_TIMER) {
+			if (data == &period_timer) {
+				etimer_reset(&period_timer);		//TODO: reset the period from collectd_conf.update freq
+				if (collectd_conf.send_active == SEND_ACTIVE_YES)
+					etimer_set(&wait_timer, random_rand() % (CLOCK_SECOND * RANDWAIT));
+
+			} else if(data == &wait_timer) {
+				/* Time to send the data */
+				PRINTF("Time to send the data\n");
+				collectd_common_send(client_conn, &collectd_conf);
+			}
 		}
 	}
 

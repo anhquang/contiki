@@ -11,6 +11,7 @@ import ast
 import struct
 
 MNPORT = 10000
+
 class NetworkTree:
     def __init__(self, version=None, id=None, type=None, data=None):
         self.version = version
@@ -20,7 +21,7 @@ class NetworkTree:
 
 def main(hostname):
     MAX = 128
-    PORT = 1200
+    PORT = 8775
     if not hostname:
         hostname = 'aaaa::212:7402:2:202'
 
@@ -30,8 +31,8 @@ def main(hostname):
     print 'Client socket name is', s.getsockname()
     delay = 1
 
-    data = [1, 20, 0, MNPORT]
-    packet = struct.Struct('!3b H')
+    data = [1, 20, 0, 1, MNPORT]
+    packet = struct.Struct('!4b H')
     packed_data = packet.pack(*data)
 
     while True:

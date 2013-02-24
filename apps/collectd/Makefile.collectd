@@ -1,2 +1,1 @@
-collectd_src = collectd.c collect-common.c
-APPS+=collect-view
+collectd_src = collectd.c colld-dispatcher.c
