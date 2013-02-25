@@ -47,11 +47,13 @@ PROCESS_NAME(collectd_sending_process);
 #endif
 #define RANDWAIT (DEFAULT_UPDATE_PERIOD)
 
-#define MAX_BUF_SIZE	300		//TODO: verify this number
+#define MAX_BUF_SIZE	60		//TODO: verify this number
 
 #define FAILURE			-1
 #define ERR_NO_ERROR	0
 #define ERR_MEMORY_ALLOCATION	1
+
+#define COPY_2B_BIGENDIAN(des, pos, source) des[pos]=(unsigned char)((source)/256); des[pos+1] = (unsigned char)((source)%256)
 
 //struct of address displace each hop a packet traveled through
 typedef struct {

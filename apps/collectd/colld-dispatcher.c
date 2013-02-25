@@ -23,6 +23,12 @@
 
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
+struct{
+	u8_t version;
+	u8_t id;
+	u8_t type;
+}collectd_object_header;
+
 /*
  * this function process the request which fall into 2 cases: request, and reply
  */
@@ -58,6 +64,12 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 		collectd_conf->send_active = commandtype;
 		collectd_conf->mnrport = srcport;
 		uip_ipaddr_copy(&collectd_conf->mnaddr, &mnaddr);
+
+		/*save header for data response*/
+		collectd_object_header.id = id;
+		collectd_object_header.version = version;
+		collectd_object_header.type = RESPONSE;
+
 		PRINTF("command type = %d\n", commandtype);
 		PRINTF("srcport = %d\n", srcport);
 		PRINT6ADDR(&mnaddr);
@@ -89,6 +101,11 @@ void collectd_prepare_data(collectd_object_t* collectpayload) {
 	rimeaddr_t parent;
 	rpl_dag_t *dag;
 
+
+	/*prepare header*/
+	collectpayload->version = collectd_object_header.version;
+	collectpayload->id = collectd_object_header.id;
+	collectpayload->type = collectd_object_header.type;
 
 	seqno++;
 	if(seqno == 0) {
@@ -129,10 +146,45 @@ void collectd_prepare_data(collectd_object_t* collectpayload) {
                                  num_neighbors, beacon_interval);
 }
 
-void collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* collectd_conf){
+void collectd_prepare_ouput(collectd_object_t* collectd_object, u8_t* output, u16_t* len){
+	u16_t pos =0;
+	u8_t i;
+
+	output[pos++] = collectd_object->version;
+	output[pos++] = collectd_object->id;
+	output[pos++] = collectd_object->type;
+	output[pos++] = collectd_object->respdata.seqno;
+
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.len); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.clock); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.timesynch_time); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.cpu); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.lpm); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.transmit); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.listen); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.parent); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.parent_etx); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.current_rtmetric); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.num_neighbors); pos+=2;
+	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.beacon_interval); pos+=2;
+
+	for (i=0; i < MAX_NUM_SENSOR; i++){
+		COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.sensors[i]); pos+=2;
+	}
+	*len = pos;
+}
+char collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* collectd_conf){
 	collectd_object_t collectd_object;
+	u8_t output[MAX_BUF_SIZE];
+	u16_t len;
 
 	collectd_prepare_data(&collectd_object);
-	uip_udp_packet_sendto(client_conn, &collectd_object,
-			sizeof(collectd_object), &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));
+
+	if (sizeof(collectd_object) > MAX_BUF_SIZE)
+		return ERR_MEMORY_ALLOCATION;
+
+	collectd_prepare_ouput(&collectd_object, output, &len);
+	uip_udp_packet_sendto(client_conn, output,
+			len, &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));
+	return ERR_NO_ERROR;
 }

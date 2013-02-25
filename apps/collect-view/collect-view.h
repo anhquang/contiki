@@ -5,6 +5,8 @@
 #include "net/rime/rimeaddr.h"
 #include "net/rime/collect.h"
 
+#define MAX_NUM_SENSOR 10
+
 struct collect_view_data_msg {
   uint16_t len;
   uint16_t clock;
@@ -19,7 +21,7 @@ struct collect_view_data_msg {
   uint16_t num_neighbors;
   uint16_t beacon_interval;
 
-  uint16_t sensors[10];
+  uint16_t sensors[MAX_NUM_SENSOR];
 };
 
 void collect_view_construct_message(struct collect_view_data_msg *msg,
