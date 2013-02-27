@@ -25,6 +25,8 @@ COMMAND_STOP	= 0
 SEND_ACTIVE_NO	= COMMAND_STOP
 SEND_ACTIVE_YES	= COMMAND_START
 
+ERROR = -1
+
 class collectd_resp_data_t(Structure):
     _fields_ = [("seqno", c_ubyte),
                 ("len", c_ushort),
@@ -73,11 +75,59 @@ def send_request(hostname):
 
 def collectd_dispatcher(address, payload):
     print 'The client at ', address, 'says', repr(payload)
-    if repr(payload[0]) == VERSION_01:
-        print "ok, work fine"
-    else:
-        print "find other way to extract data"
 
+    code = str(len(payload))+'B'
+    s = struct.Struct(code)
+    encodeddata = s.unpack(payload)
+
+
+    pos = 0
+    if encodeddata[pos] <> VERSION_01:
+        print "ERROR, different version"
+        return ERROR
+
+    pos += 1
+    id = encodeddata[pos]
+    #ignore id for now
+    pos += 1
+    type = encodeddata[pos]
+    if type <> RESPONSE:
+        print "ERROR, not a response msg"
+        return ERROR
+
+    pos += 1
+    seqno = encodeddata[pos]
+    #ignore sequence number for now
+    pos += 1
+    collectdata_len = encodeddata[pos]*256 + encodeddata[pos+1]
+    if collectdata_len*2+pos <> len(payload):
+        print "ERROR, corrupted msg (based on len)"
+        return ERROR
+
+    pos += 2
+    clock= encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    timesynch_time= encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    cpu = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    lpm = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    transit = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    listen = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    parent = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    parent_etx = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    current_rtmetric = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    num_neighbors = encodeddata[pos]*256 + encodeddata[pos+1]
+    pos += 2
+    beacon_interval = encodeddata[pos]*256 + encodeddata[pos+1]
+
+    print "Data len (extracted) is ", collectdata_len
 
 
 def process_response():
@@ -92,7 +142,7 @@ def process_response():
         except:
             traceback.print_exc()
             continue
-        collectd_dispatcher(address, (data))
+        collectd_dispatcher(address, data)
         code = str(len(data))+'B'
         s = struct.Struct(code)
 
