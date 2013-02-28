@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+#TODO: replace print by logging
+
 import random, socket, sys
 import struct
 import traceback
 
-MNPORT = 10000
+COLLECTD_MANG_PORT = 10000
+COLLECTD_CLIENT_PORT = 8775
 MAX = 128
 
 MAX_NUM_SENSOR = 10
@@ -32,7 +35,7 @@ class collectd_recv_pk(object):
         for i in range(0, MAX_NUM_SENSOR):
             self.sensors.append(0)
 
-    def collectd_dispatcher(self, address, payload):
+    def dispatcher(self, address, payload):
         DEFAULT_LEN_PAYLOAD = 48
         DEFAULT_COLLECTD_DATA_ITEM = 22
 
@@ -97,34 +100,41 @@ class collectd_recv_pk(object):
                 ", sensors = %s" %self.sensors
 
 
-def send_request(hostname):
-    PORT = 8775
-    if not hostname:
-        hostname = 'aaaa::212:7402:2:202'
+class collectd_req_pk(object):
+    def reqs_sock_create(self, hostname):
+        s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+        try:
+            s.connect((hostname, COLLECTD_CLIENT_PORT))
+        except:
+            raise RuntimeError('Host %s is unreachable' %hostname)
 
-    s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-    try:
-        s.connect((hostname, PORT))
-    except:
-        raise RuntimeError('Host %s is unreachable' %hostname)
+        print 'Client socket name is', s.getsockname()
+        return s
 
-    print 'Client socket name is', s.getsockname()
-    delay = 1
+    def reqs_start(self, hostname):
+        data = [VERSION_01, 20, REQUEST, COMMAND_START, COLLECTD_MANG_PORT]
+        packet = struct.Struct('!4B H')
+        packed_data = packet.pack(*data)
 
-    data = [1, 20, 0, 1, MNPORT]
-    packet = struct.Struct('!4B H')
-    packed_data = packet.pack(*data)
+        s = self.reqs_sock_create(hostname)
+        s.send(packed_data)
+        #print 'Waiting up to', delay, 'seconds for a reply'
+        #s.settimeout(delay)
 
-    s.send(packed_data)
-    #print 'Waiting up to', delay, 'seconds for a reply'
-    s.settimeout(delay)
+    def reqs_stop(self, hostname):
+        data = [VERSION_01, 20, REQUEST, COMMAND_STOP, COLLECTD_MANG_PORT]
+        packet = struct.Struct('!4B H')
+        packed_data = packet.pack(*data)
 
-    print 'Did send a request'
+        s = self.reqs_sock_create(hostname)
+        s.send(packed_data)
+        #print 'Waiting up to', delay, 'seconds for a reply'
+        #s.settimeout(delay)
 
 
 def process_response():
     rec_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-    rec_sock.bind(('', MNPORT))
+    rec_sock.bind(('', COLLECTD_MANG_PORT))
     while(1):
         try:
             data, address = rec_sock.recvfrom(MAX)
@@ -134,9 +144,15 @@ def process_response():
             traceback.print_exc()
             continue
         recv_pk_process = collectd_recv_pk()
-        recv_pk_process.collectd_dispatcher(address, data)
+        recv_pk_process.dispatcher(address, data)
         print recv_pk_process
 
+def send_request(hostname = None):
+    if not hostname:
+        hostname = 'aaaa::212:7402:2:202'
+
+    sendreq = collectd_req_pk()
+    sendreq.reqs_start(hostname)
 
 if __name__ == '__main__':
     if sys.argv[1] == '1':
