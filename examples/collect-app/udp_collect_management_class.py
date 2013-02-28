@@ -1,16 +1,8 @@
 #!/usr/bin/env python
-# client UDP program that connect to an ipv6 server at PORT
-# using: python udp_remote-upv6.python
-# first, contact the borderrouter to get list of hosts in the network
-# then, walk through all nodes, retrive all possible information (thanks to
-# walk command)
 
 import random, socket, sys
-import json
-import ast
 import struct
 import traceback
-from ctypes import *
 
 MNPORT = 10000
 MAX = 128

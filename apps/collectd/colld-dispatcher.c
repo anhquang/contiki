@@ -168,6 +168,12 @@ void collectd_prepare_ouput(collectd_object_t* collectd_object, u8_t* output, u1
 	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.num_neighbors); pos+=2;
 	COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.beacon_interval); pos+=2;
 
+	PRINTF("cpu=%d, lpm=%d, trans=%d, list=%d\n",
+			collectd_object->respdata.collect_data.cpu,
+			collectd_object->respdata.collect_data.lpm,
+			collectd_object->respdata.collect_data.transmit,
+			collectd_object->respdata.collect_data.listen);
+
 	for (i=0; i < MAX_NUM_SENSOR; i++){
 		COPY_2B_BIGENDIAN(output, pos, collectd_object->respdata.collect_data.sensors[i]); pos+=2;
 	}
