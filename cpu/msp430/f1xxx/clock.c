@@ -42,7 +42,6 @@
 #define MAX_TICKS (~((clock_time_t)0) / 2)
 
 static volatile unsigned long seconds;
-
 static volatile clock_time_t count = 0;
 /* last_tar is used for calculating clock_fine */
 static volatile uint16_t last_tar = 0;
@@ -63,7 +62,7 @@ ISR(TIMERA1, timera1)
     do {
       TACCR1 += INTERVAL;
       ++count;
-
+     
       /* Make sure the CLOCK_CONF_SECOND is a power of two, to ensure
 	 that the modulo operation below becomes a logical and and not
 	 an expensive divide. Algorithm from Wikipedia:
@@ -225,3 +224,14 @@ clock_counter(void)
   return t1;
 }
 /*---------------------------------------------------------------------------*/
+void clock_inc_dec(int16_t var)
+{
+if (var>0)
+{
+count++;
+}
+else
+{
+count--;
+}
+}

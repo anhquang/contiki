@@ -69,7 +69,7 @@
 #define __CLOCK_H__
 
 #include "contiki-conf.h"
-
+#include "sys/rtimer.h"
 /**
  * A second, measured in system clock time.
  *
@@ -139,6 +139,9 @@ int clock_fine_max(void);
 unsigned short clock_fine(void);
 void clock_delay(unsigned int delay);
 
+rtimer_clock_t clock_counter(void);
+void clock_inc_dec(int var);
+void clock_set(clock_time_t clock, clock_time_t fclock);
 #endif /* __CLOCK_H__ */
 
 /** @} */
