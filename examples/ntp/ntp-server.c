@@ -24,10 +24,10 @@ PROCESS(ntp_server_process,"ntp server");
 AUTOSTART_PROCESSES(&ntp_server_process);
 /*----------------------------------------------------------------------------*/
 static void
-tcpip_handler(void)
-{
-ntp_server_send(server_conn);
+tcpip_handler(void) {
+	ntp_server_send(server_conn);
 }
+
 /*---------------------------------------------------------------------------*/
 static void
 print_local_addresses(void)
@@ -50,10 +50,8 @@ print_local_addresses(void)
 }
 /*---------------------------------------------------------------------------*/
 #ifdef BROADCAST_MODE
-static void 
-timeout_handler(void)
-{
-ntp_server_send(server_conn);
+static void timeout_handler(void) {
+	ntp_server_send(server_conn);
 }
 #endif 
 /*---------------------------------------------------------------------------*/
@@ -62,17 +60,17 @@ ntp_server_send(server_conn);
 
 PROCESS_THREAD(ntp_server_process, ev, data)
 {
- uip_ipaddr_t ipaddr;
-  struct uip_ds6_addr *root_if;
-static struct etimer et_check_s;
+	uip_ipaddr_t ipaddr;
+	struct uip_ds6_addr *root_if;
+	static struct etimer et_check_s;
 
-  PROCESS_BEGIN();
+	PROCESS_BEGIN();
 
-  PROCESS_PAUSE();
+	PROCESS_PAUSE();
 
-  SENSORS_ACTIVATE(button_sensor);
+	SENSORS_ACTIVATE(button_sensor);
 
-  PRINTF("UDP server started\n");
+	PRINTF("UDP server started\n");
 
 #if UIP_CONF_ROUTER
 /* The choice of server address determines its 6LoPAN header compression.
@@ -108,37 +106,38 @@ static struct etimer et_check_s;
   }
 #endif /* UIP_CONF_ROUTER */
   
-  print_local_addresses();
+	print_local_addresses();
 
-  /* The data sink runs with a 100% duty cycle in order to ensure high 
-     packet reception rates. */
-  NETSTACK_MAC.off(1);
+	/* The data sink runs with a 100% duty cycle in order to ensure high
+	 packet reception rates. */
+	NETSTACK_MAC.off(1);
 
-  server_conn = udp_new(NULL, UIP_HTONS(CLIENT_PORT), NULL);
-  if(server_conn == NULL) {
-    PRINTF("No UDP connection available, exiting the process!\n");
-    PROCESS_EXIT();
-  }
-  udp_bind(server_conn, UIP_HTONS(SERVER_PORT));
+	server_conn = udp_new(NULL, UIP_HTONS(CLIENT_PORT), NULL);
+	if(server_conn == NULL) {
+		PRINTF("No UDP connection available, exiting the process!\n");
+		PROCESS_EXIT();
+	}
+	udp_bind(server_conn, UIP_HTONS(SERVER_PORT));
 
-  PRINTF("Created a server connection with remote address ");
-  PRINT6ADDR(&server_conn->ripaddr);
-  PRINTF(" local/remote port %u/%u\n", UIP_HTONS(server_conn->lport),
-         UIP_HTONS(server_conn->rport));
+	PRINTF("Created a server connection with remote address ");
+	PRINT6ADDR(&server_conn->ripaddr);
+	PRINTF(" local/remote port %u/%u\n", UIP_HTONS(server_conn->lport),
+			UIP_HTONS(server_conn->rport));
 #ifdef BROADCAST_MODE
 static struct etimer etmr;
 etimer_set(&etmr, 0.5 * CLOCK_SECOND);
 #endif
- etimer_set(&et_check_s, 10 * CLOCK_SECOND);
 
-  while(1) {
-    PROCESS_YIELD();
-    if(ev == tcpip_event) {
-      tcpip_handler();
-    } else if (ev == sensors_event && data == &button_sensor) {
-      PRINTF("Initiaing global repair\n");
-      rpl_repair_root(RPL_DEFAULT_INSTANCE);
-    }
+	etimer_set(&et_check_s, 10 * CLOCK_SECOND);
+
+	while(1) {
+		PROCESS_YIELD();
+		if(ev == tcpip_event) {
+			tcpip_handler();
+		} else if (ev == sensors_event && data == &button_sensor) {
+			PRINTF("Initiaing global repair\n");
+			rpl_repair_root(RPL_DEFAULT_INSTANCE);
+		}
 #ifdef BROADCAST_MODE                   //send periodic broadcast messages //
     if (etimer_expired(&etmr))
 	{
@@ -146,17 +145,16 @@ etimer_set(&etmr, 0.5 * CLOCK_SECOND);
 	etimer_reset(&etmr);
 	}
 #endif
-if (etimer_expired(&et_check_s))
-{
-unsigned long check_second;
-rtimer_clock_t check_clock_counter;
-check_second=clock_seconds();
-check_clock_counter=clock_counter();
-PRINTF ("current time: %lu,%lu \n",check_second,check_clock_counter);
-etimer_reset(&et_check_s);
-}
-  }
+		if (etimer_expired(&et_check_s)) {
+			unsigned long check_second;
+			rtimer_clock_t check_clock_counter;
+			check_second=clock_seconds();
+			check_clock_counter=clock_counter();
+			PRINTF ("current time: %lu,%lu \n",check_second,check_clock_counter);
+			etimer_reset(&et_check_s);
+		}
+	}
 
-  PROCESS_END();
+	PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/

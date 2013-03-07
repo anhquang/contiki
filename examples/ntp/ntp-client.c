@@ -80,95 +80,85 @@ set_global_address(void)
 }
 /*---------------------------------------------------------------------------*/
 #ifndef BROADCAST_MODE            // this function sends NTP client message to REMOTE_HOST
-static void
-timeout_handler(void)
-{
- ntp_client_send(client_conn,server_ipaddr,msg);
+static void timeout_handler(void) {
+	ntp_client_send(client_conn, server_ipaddr, msg);
 }
 #endif
 /*------------------------------------------------------------------*/
-static void
-tcpip_handler(void)
-{
-PRINTF ("Recv a packet \n");
-ntp_adjust_time();
+static void tcpip_handler(void) {
+	PRINTF ("Recv a packet \n");
+	ntp_adjust_time();
 }
 /*---------------------------------------------------------------*/
 PROCESS_THREAD(ntpd_process, ev, data)
 {
-  static struct etimer et;
-  static struct etimer et_check_c;
+	static struct etimer et;
+	static struct etimer et_check_c;
 
-  PROCESS_BEGIN();
-  
-  PROCESS_PAUSE();
+	PROCESS_BEGIN();
+
+	PROCESS_PAUSE();
+
+	set_global_address();
+
+	PRINTF("UDP client process started\n");
+
+	print_local_addresses();
+
+	client_conn = udp_new(NULL, UIP_HTONS(SERVER_PORT), NULL);        // remote server port
+
+	udp_bind(client_conn, UIP_HTONS(CLIENT_PORT));     // local client port
+
+	msg.ppoll = TAU;              // log2(poll_interval)
+
+	// Send interval in clock ticks
+	clock_set(500,500);
  
-  set_global_address();
-  
-  PRINTF("UDP client process started\n");
-
-  print_local_addresses();
-
-  client_conn = udp_new(NULL, UIP_HTONS(SERVER_PORT), NULL);        // remote server port
-
- udp_bind(client_conn, UIP_HTONS(CLIENT_PORT));     // local client port
-
-  msg.ppoll = TAU;              // log2(poll_interval)
-
-  // Send interval in clock ticks
-
- clock_set(500,500);
- 
-PRINTF("Created a connection with the server ");
-  PRINT6ADDR(&client_conn->ripaddr);
-  PRINTF(" local/remote port %u/%u\n",
+	PRINTF("Created a connection with the server ");
+	PRINT6ADDR(&client_conn->ripaddr);
+	PRINTF(" local/remote port %u/%u\n",
 	UIP_HTONS(client_conn->lport), UIP_HTONS(client_conn->rport));
 
+	etimer_set(&et, 6 * CLOCK_SECOND);
+	PRINTF ("WAIT 6 second \n");
+	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
-
-  etimer_set(&et, 6 * CLOCK_SECOND);
-PRINTF ("WAIT 6 second \n");
-  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-
-etimer_set(&et_check_c, 10 * CLOCK_SECOND);
+	etimer_set(&et_check_c, 10 * CLOCK_SECOND);
 #ifndef BROADCAST_MODE
-  // ask for time
-  msg.refid = UIP_HTONL(0x494e4954);    // INIT string in ASCII
-  timeout_handler();
-  msg.refid = 0;
+	// ask for time
+	msg.refid = UIP_HTONL(0x494e4954);    // INIT string in ASCII
+	timeout_handler();
+	msg.refid = 0;
 
-  etimer_set(&et, SEND_INTERVAL);       // wait SEND_INTERVAL before sending next request
+	etimer_set(&et, SEND_INTERVAL);       // wait SEND_INTERVAL before sending next request
 
-PRINTF("WAIT SEND INTERVAL: %d\n",POLL_INTERVAL);
+	PRINTF("WAIT SEND INTERVAL: %d\n",POLL_INTERVAL);
 #endif
 
-  while(1){
-    PROCESS_WAIT_EVENT();
-	
-    if(ev == tcpip_event) {
-      tcpip_handler();
-    }
-#ifndef BROADCAST_MODE
-    if(etimer_expired(&et)) {
-      timeout_handler();
-      etimer_reset(&et);      // wait again SEND_INTERVAL seconds
+	while(1){
+		PROCESS_WAIT_EVENT();
 
-    } 
+		if(ev == tcpip_event) {
+			tcpip_handler();
+		}
+#ifndef BROADCAST_MODE
+		if(etimer_expired(&et)) {
+			timeout_handler();
+			etimer_reset(&et);      // wait again SEND_INTERVAL seconds
+		}
 //else if(ev == PROCESS_EVENT_MSG)  // another application wants us to synchronise
 //    {
 //      timeout_handler();
 //    }
 #endif
-if (etimer_expired(&et_check_c))
-{
-unsigned long check_second;
-rtimer_clock_t check_clock_counter;
-check_second=clock_seconds();
-check_clock_counter=clock_counter();
-PRINTF ("current time: %lu,%lu \n",check_second,check_clock_counter);
-etimer_reset(&et_check_c); 
-}
-  }
-
-  PROCESS_END();
+		if (etimer_expired(&et_check_c)) {
+			unsigned long check_second;
+			rtimer_clock_t check_clock_counter;
+			check_second=clock_seconds();
+			check_clock_counter=clock_counter();
+			PRINTF ("current time: %lu,%lu \n", check_second, check_clock_counter);
+			etimer_reset(&et_check_c);
+		}
+	}
+	PROCESS_END();
 }
