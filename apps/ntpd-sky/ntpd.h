@@ -72,9 +72,12 @@ struct time_spec ts;
 /*
  * NTP structures
  */
-
+struct time_spec {
+	long sec;
+	long nsec;
+	};
 static volatile int16_t adjcompare;
-
+static volatile unsigned long boottime;
 
 struct l_fixedpt {
 	uint32_t int_partl;
