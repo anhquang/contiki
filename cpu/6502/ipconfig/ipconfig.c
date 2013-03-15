@@ -70,9 +70,9 @@ static struct ctk_button savebutton =
 static struct ctk_button cancelbutton =
   {CTK_BUTTON(20, 13, 6, "Cancel")};
 
-PROCESS(dhcp_process, "DHCP client");
+PROCESS(ipconfig_process, "IP config");
 
-AUTOSTART_PROCESSES(&dhcp_process);
+AUTOSTART_PROCESSES(&ipconfig_process);
 
 /*-----------------------------------------------------------------------------------*/
 static char *
@@ -170,15 +170,15 @@ static void
 app_quit(void)
 {
   ctk_window_close(&window);
-  process_exit(&dhcp_process);
+  process_exit(&ipconfig_process);
   LOADER_UNLOAD();
 }
 /*-----------------------------------------------------------------------------------*/
-PROCESS_THREAD(dhcp_process, ev, data)
+PROCESS_THREAD(ipconfig_process, ev, data)
 {
   PROCESS_BEGIN();
   
-  ctk_window_new(&window, 29, 14, "DHCP client");
+  ctk_window_new(&window, 29, 14, "IP config");
   
   CTK_WIDGET_ADD(&window, &requestbutton);
   CTK_WIDGET_ADD(&window, &statuslabel);  
@@ -200,9 +200,9 @@ PROCESS_THREAD(dhcp_process, ev, data)
   ctk_window_open(&window);
 
   /* Allow resolver to set DNS server address. */
-  process_post(PROCESS_CURRENT(), PROCESS_EVENT_MSG, NULL);
+  PROCESS_PAUSE();
 
-  dhcpc_init(uip_ethaddr.addr, sizeof(uip_ethaddr.addr));
+  dhcpc_init(uip_lladdr.addr, sizeof(uip_lladdr.addr));
 
   while(1) {
     PROCESS_WAIT_EVENT();
@@ -214,21 +214,21 @@ PROCESS_THREAD(dhcp_process, ev, data)
       dhcpc_appcall(ev, data);
     } else if(ev == ctk_signal_button_activate) {   
       if(data == (process_data_t)&requestbutton) {
-	dhcpc_request();
-	set_statustext("Requesting...");
+        dhcpc_request();
+        set_statustext("Requesting...");
       }
       if(data == (process_data_t)&savebutton) {
-	apply_tcpipconfig();
-	app_quit();
+        apply_tcpipconfig();
+        app_quit();
       }
       if(data == (process_data_t)&cancelbutton) {
-	app_quit();
+        app_quit();
       }
     } else if(
 #if CTK_CONF_WINDOWCLOSE
-	      ev == ctk_signal_window_close ||
+              ev == ctk_signal_window_close ||
 #endif
-	      ev == PROCESS_EVENT_EXIT) {
+              ev == PROCESS_EVENT_EXIT) {
       app_quit();
     }
   }
