@@ -32,6 +32,11 @@
  *
  */
 
+/*
+ * Nguyen Quoc Dinh nqdinh@hui.edu.vn
+ * Mar 2013
+ */
+
 #include <stdlib.h>
 
 
@@ -63,14 +68,13 @@
 
 
 
-void clock_set_time(unsigned long sec,unsigned long nsec)
-{
-clock_time_t cnt,tarcnt;
-//boottime = sec - clock_seconds();
-clock_set_seconds(sec);
-cnt=sec*CLOCK_SECOND + nsec * (CLOCK_SECOND / 1000000000);
-tarcnt=sec*(CLOCK_SECOND*256)+nsec * (CLOCK_SECOND*256)/1000000000;
-clock_set(cnt,tarcnt);
+void clock_set_time(unsigned long sec,unsigned long nsec) {
+	clock_time_t cnt,tarcnt;
+	//boottime = sec - clock_seconds();
+	clock_set_seconds(sec);
+	cnt=sec*CLOCK_SECOND + nsec * (CLOCK_SECOND / 1000000000);
+	tarcnt=sec*(CLOCK_SECOND*256)+nsec * (CLOCK_SECOND*256)/1000000000;
+	clock_set(cnt,tarcnt);
 }
 //****//
 void clock_get_time(struct time_spec *ts)

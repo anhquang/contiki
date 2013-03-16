@@ -32,6 +32,7 @@
  *
  */
 
+
 #ifndef __NTPD_H__
 #define __NTPD_H__
 
@@ -147,5 +148,5 @@ void ntp_adjust_time();
 void
 send_unicast(struct uip_udp_conn *udpconn, uip_ipaddr_t *dest, struct ntp_msg *buf, int size);
 void
-send_broadcast(struct uip_udp_conn *udpconn,struct ntp_msg *buf, int size);
+send_broadcast(struct uip_udp_conn *udpconn, struct ntp_msg *buf, int size);
 #endif /* __NTPD_H__ */

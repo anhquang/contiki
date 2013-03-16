@@ -139,11 +139,10 @@ etimer_set(&etmr, 0.5 * CLOCK_SECOND);
 			rpl_repair_root(RPL_DEFAULT_INSTANCE);
 		}
 #ifdef BROADCAST_MODE                   //send periodic broadcast messages //
-    if (etimer_expired(&etmr))
-	{
-	timeout_handler();
-	etimer_reset(&etmr);
-	}
+		if (etimer_expired(&etmr)) {
+			timeout_handler();
+			etimer_reset(&etmr);
+		}
 #endif
 		if (etimer_expired(&et_check_s)) {
 			unsigned long check_second;

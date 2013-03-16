@@ -1,6 +1,5 @@
 #include "ntpd.h"
 
-
 #include "contiki.h"
 #include "lib/random.h"
 #include "sys/ctimer.h"
@@ -67,10 +66,10 @@ set_global_address(void)
  * Note the IPCMV6 checksum verification depends on the correct uncompressed addresses.
  */ 
 
-#if 0  
+#if 1
 /* Mode 1 - 64 bits inline */
-   uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 1);
-#elif 1
+   uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0x212, 0x7401, 1, 0x101);
+#elif 0
 /* Mode 2 - 16 bits inline */
   uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0, 0x00ff, 0xfe00, 1);
 #else

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <simconf>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/mrm</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/mspsim</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/avrora</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/serial_socket</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/collect-view</project>
-  <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/powertracker</project>
+  <project EXPORT="discard">[APPS_DIR]/mrm</project>
+  <project EXPORT="discard">[APPS_DIR]/mspsim</project>
+  <project EXPORT="discard">[APPS_DIR]/avrora</project>
+  <project EXPORT="discard">[APPS_DIR]/serial_socket</project>
+  <project EXPORT="discard">[APPS_DIR]/collect-view</project>
+  <project EXPORT="discard">[APPS_DIR]/powertracker</project>
   <simulation>
     <title>My simulation</title>
     <randomseed>123456</randomseed>
@@ -24,9 +24,9 @@
       se.sics.cooja.mspmote.SkyMoteType
       <identifier>sky1</identifier>
       <description>Sky Mote Type #sky1</description>
-      <source EXPORT="discard">[CONTIKI_DIR]/examples/ipv6/ntp/ntp-server.c</source>
+      <source EXPORT="discard">[CONTIKI_DIR]/examples/ntp/ntp-server.c</source>
       <commands EXPORT="discard">make ntp-server.sky TARGET=sky</commands>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/ipv6/ntp/ntp-server.sky</firmware>
+      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/ntp/ntp-server.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.IPAddress</moteinterface>
@@ -47,9 +47,9 @@
       se.sics.cooja.mspmote.SkyMoteType
       <identifier>sky2</identifier>
       <description>Sky Mote Type #sky2</description>
-      <source EXPORT="discard">[CONTIKI_DIR]/examples/ipv6/ntp/ntp-client.c</source>
+      <source EXPORT="discard">[CONTIKI_DIR]/examples/ntp/ntp-client.c</source>
       <commands EXPORT="discard">make ntp-client.sky TARGET=sky</commands>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/ipv6/ntp/ntp-client.sky</firmware>
+      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/ntp/ntp-client.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.IPAddress</moteinterface>
@@ -70,8 +70,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>62.99639026909249</x>
-        <y>71.99086118659847</y>
+        <x>52.9353895189576</x>
+        <y>75.4905911201768</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -84,8 +84,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>31.23132403170977</x>
-        <y>83.66767284945897</y>
+        <x>28.908430131593335</x>
+        <y>48.14956836903814</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -94,11 +94,25 @@
       </interface_config>
       <motetype_identifier>sky2</motetype_identifier>
     </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        se.sics.cooja.interfaces.Position
+        <x>4.0529549032854675</x>
+        <y>18.599170042049902</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        se.sics.cooja.mspmote.interfaces.MspMoteID
+        <id>3</id>
+      </interface_config>
+      <motetype_identifier>sky2</motetype_identifier>
+    </mote>
   </simulation>
   <plugin>
     se.sics.cooja.plugins.SimControl
     <width>280</width>
-    <z>1</z>
+    <z>2</z>
     <height>160</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
@@ -110,10 +124,10 @@
       <skin>se.sics.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>6.244710301601455 0.0 0.0 6.244710301601455 -177.39420727710748 -282.5620724731118</viewport>
+      <viewport>3.620932578166887 0.0 0.0 3.620932578166887 86.32452355285243 -17.34634073212408</viewport>
     </plugin_config>
     <width>400</width>
-    <z>2</z>
+    <z>0</z>
     <height>400</height>
     <location_x>1</location_x>
     <location_y>1</location_y>
@@ -121,11 +135,11 @@
   <plugin>
     se.sics.cooja.plugins.LogListener
     <plugin_config>
-      <filter />
+      <filter>ID:2</filter>
     </plugin_config>
-    <width>1000</width>
-    <z>0</z>
-    <height>240</height>
+    <width>966</width>
+    <z>1</z>
+    <height>391</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
   </plugin>
@@ -134,17 +148,18 @@
     <plugin_config>
       <mote>0</mote>
       <mote>1</mote>
+      <mote>2</mote>
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />
       <split>-1</split>
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
-    <width>1400</width>
+    <width>1366</width>
     <z>4</z>
     <height>166</height>
     <location_x>0</location_x>
-    <location_y>687</location_y>
+    <location_y>555</location_y>
   </plugin>
   <plugin>
     se.sics.cooja.plugins.Notes
@@ -152,7 +167,7 @@
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <width>720</width>
+    <width>686</width>
     <z>3</z>
     <height>160</height>
     <location_x>680</location_x>
