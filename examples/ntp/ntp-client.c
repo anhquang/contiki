@@ -1,4 +1,4 @@
-#include "ntpd.h"
+#include "ntp.h"
 
 #include "contiki.h"
 #include "lib/random.h"

@@ -1,4 +1,4 @@
-#include "ntpd.h"
+#include "ntp.h"
 
 #include "sys/etimer.h"
 #include "contiki.h"
@@ -107,6 +107,8 @@ PROCESS_THREAD(ntp_server_process, ev, data)
 #endif /* UIP_CONF_ROUTER */
   
 	print_local_addresses();
+
+	clock_set_seconds(100000000000);
 
 	/* The data sink runs with a 100% duty cycle in order to ensure high
 	 packet reception rates. */

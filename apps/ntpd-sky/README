@@ -3,3 +3,8 @@ TODO:
 - define to comment out server-functions (e.g. ntp_server_send @ntpd). Normal
   motes doesn't need to be an NTP server
 - make one-source-code-for-many-platforms (with define, of course)
+
+
+BUG:
+- seem client print out "current time ..." *a lot*
+- too big offset, the adjust-time function could not work (big bug)

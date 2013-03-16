@@ -1,5 +1,8 @@
-all: ntp-client ntp-server
-APPS = ntpd-sky servreg-hack
+#all: ntp-client ntp-server
+all: ntp-app
+
+APPS += ntpd-sky 
+APPS += servreg-hack
 CONTIKI=../..
 
 WITH_UIP6=1
