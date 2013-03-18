@@ -47,10 +47,7 @@ static struct uip_udp_conn *client_conn;
 static collectd_conf_t collectd_conf;
 
 /*---------------------------------------------------------------------------*/
-PROCESS(collectd_client_process, "Collectd client process");
-PROCESS(collectd_sending_process, "Collectd sending process");
-//AUTOSTART_PROCESSES(&collect_common_process);
-//AUTOSTART_PROCESSES(&collect_common_process);
+PROCESS(collectd_process, "Collectd sending process");
 
 /*---------------------------------------------------------------------------*/
 static void collectd_udp_handler(void) {
@@ -66,9 +63,9 @@ void collectd_conf_init(collectd_conf_t *conf){
 	conf->update_freq_in_sec = DEFAULT_UPDATE_PERIOD;	//this value may update via snmp
 }
 /*---------------------------------------------------------------------------*/
-
-PROCESS_THREAD(collectd_client_process, ev, data)
+PROCESS_THREAD(collectd_process, ev, data)
 {
+	static struct etimer period_timer, wait_timer;
 	PROCESS_BEGIN();
 
 	collectd_conf_init(&collectd_conf);
@@ -79,26 +76,12 @@ PROCESS_THREAD(collectd_client_process, ev, data)
 
 	PRINTF("Created a connection with the server ");
 
-	while(1) {
-		PROCESS_YIELD();
-		if(ev == tcpip_event) {
-			collectd_udp_handler();
-		}
-	}
-
-	PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
-
-PROCESS_THREAD(collectd_sending_process, ev, data)
-{
-	static struct etimer period_timer, wait_timer;
-	PROCESS_BEGIN();
 	/* Send a packet every 60-62 seconds. */
 	etimer_set(&period_timer, CLOCK_SECOND * DEFAULT_UPDATE_PERIOD);
 
 	while(1) {
 		PROCESS_WAIT_EVENT();
+		//send update (collected data)
 		if(ev == PROCESS_EVENT_TIMER) {
 			if (data == &period_timer) {
 				etimer_reset(&period_timer);		//TODO: reset the period from collectd_conf.update freq
@@ -110,6 +93,10 @@ PROCESS_THREAD(collectd_sending_process, ev, data)
 				PRINTF("Time to send the data\n");
 				collectd_common_send(client_conn, &collectd_conf);
 			}
+		}
+		//receive a request (here, expected a request to begin to send update)
+		if(ev == tcpip_event) {
+			collectd_udp_handler();
 		}
 	}
 

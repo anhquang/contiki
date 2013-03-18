@@ -26,8 +26,7 @@
 #endif
 #include "collect-view.h"
 
-PROCESS_NAME(collectd_client_process);
-PROCESS_NAME(collectd_sending_process);
+PROCESS_NAME(collectd_process);
 
 #define COLLECTD_CLIENT_PORT 8775
 

@@ -6,7 +6,6 @@ WITH_UIP6=1
 CFLAGS+= -DUIP_CONF_IPV6_RPL
 
 APPS+=collectd
-APPS+=collect-view
 #APPS+=snmpd
 
 CONTIKI=../..

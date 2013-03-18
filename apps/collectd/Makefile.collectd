@@ -1,1 +1,4 @@
 collectd_src = collectd.c colld-dispatcher.c
+APPS += collect-view
+include $(CONTIKI)/apps/collect-view/Makefile.collect-view
+
