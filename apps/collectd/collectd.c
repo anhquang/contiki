@@ -40,7 +40,7 @@
 #include "collectd.h"
 #include "colld-dispatcher.h"
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG NONE
 #include "net/uip-debug.h"
 
 static struct uip_udp_conn *client_conn;

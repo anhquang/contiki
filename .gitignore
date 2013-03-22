@@ -17,6 +17,7 @@
 *.wismote
 *.esb
 *.avr-raven
+*.avr-atmega128rfa1
 *.exp5438
 *.mb851
 *.win32

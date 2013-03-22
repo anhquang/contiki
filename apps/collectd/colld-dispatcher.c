@@ -18,7 +18,7 @@
 #include "colld-dispatcher.h"
 #include "collect-view.h"
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG NONE
 #include "net/uip-debug.h"
 
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])

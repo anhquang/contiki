@@ -25,6 +25,7 @@
 #include "dev/uart1.h"
 #endif
 #include "collect-view.h"
+#include "collectd-type.h"
 
 PROCESS_NAME(collectd_process);
 
