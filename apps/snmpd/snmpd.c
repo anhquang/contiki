@@ -30,7 +30,8 @@
 #include "dispatcher.h"
 #include "mib-init.h"
 #include "logging.h"
-#include "keytools.h"
+//#include "keytools.h"
+//#include "md5.h"
 
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
@@ -132,7 +133,7 @@ static void udp_handler(process_event_t ev, process_data_t data)
 }
 /*-----------------------------------------------------------------------------------*/
 
-#include "md5.h"
+
 
 /*-----------------------------------------------------------------------------------*/
 /*

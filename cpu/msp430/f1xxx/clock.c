@@ -226,12 +226,6 @@ clock_counter(void)
 /*---------------------------------------------------------------------------*/
 void clock_inc_dec(int16_t var)
 {
-if (var>0)
-{
-count++;
-}
-else
-{
-count--;
-}
+	if (var>0)	count++;
+	else count--;
 }

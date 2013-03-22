@@ -96,34 +96,26 @@ ts->nsec = tmp_scount * (1000000000 / CLOCK_SECOND)+tarcounter*(1000000000/(CLOC
 while (ts->sec != (clock_seconds()));
 }
 //*****//
-void clock_adjust_time(struct time_spec *delta)
-{
-if (delta->sec == 0L){
-	if (delta->nsec == 0L){
-	adjcompare=0;
-	return;
-	} else{
-	adjcompare = -delta->nsec / (1000000000 / (CLOCK_SECOND*256));
-}
-}else	{
-adjcompare=-delta->sec * (CLOCK_SECOND * 256)+-delta->nsec / (1000000000/(CLOCK_SECOND*256));
-}
-if (adjcompare ==0)
-{
-//do nothing//
-}
-else if (adjcompare > 0)
-{
-adjcompare--;
-clock_inc_dec(adjcompare);
-}
-else
-{
-adjcompare++;
-clock_inc_dec(adjcompare);
-}
-
-
+void clock_adjust_time(struct time_spec *delta) {
+	if (delta->sec == 0L) {
+		if (delta->nsec == 0L){
+			adjcompare=0;
+			return;
+		} else {
+			adjcompare = -delta->nsec / (1000000000 / (CLOCK_SECOND*256));
+		}
+	} else {
+		adjcompare=-delta->sec * (CLOCK_SECOND * 256)+-delta->nsec / (1000000000/(CLOCK_SECOND*256));
+	}
+	if (adjcompare ==0) {
+	//do nothing//
+	} else if (adjcompare > 0) {
+		adjcompare--;
+		clock_inc_dec(adjcompare);
+	} else {
+		adjcompare++;
+		clock_inc_dec(adjcompare);
+	}
 }
 /*---------------------------------------------------------------------------*/
 void ntp_server_send(struct uip_udp_conn *udpconn)

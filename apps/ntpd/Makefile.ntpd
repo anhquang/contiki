@@ -5,6 +5,6 @@
 #CFLAGS+=-D'REMOTE_HOST="bbbb::260:6eff:fe7a:d4b8"'
 #CFLAGS+=-DTAU=5
 
-ntpd-sky_src = convert.c ntpd.c ntp.c
+ntpd_src = convert.c ntpd.c ntp.c
 
 #include $(CONTIKI)/Makefile.include

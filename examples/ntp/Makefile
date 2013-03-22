@@ -1,7 +1,7 @@
 #all: ntp-client ntp-server
 all: ntp-app
 
-APPS += ntpd-sky 
+APPS += ntpd 
 APPS += servreg-hack
 CONTIKI=../..
 

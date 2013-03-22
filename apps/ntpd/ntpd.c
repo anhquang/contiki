@@ -160,7 +160,9 @@ PROCESS_THREAD(ntpd_process, ev, data)
 			rtimer_clock_t check_clock_counter;
 			check_second=clock_seconds();
 			check_clock_counter=clock_counter();
-			PRINTF ("current time: %lu,%lu \n", check_second, check_clock_counter);
+			PRINTF ("current time: %lu%lu,%lu%lu \n",
+					check_second/65536, check_second%65536,
+					check_clock_counter/65536, check_clock_counter%65536);
 			etimer_reset(&et_check_c);
 		}
 	}
