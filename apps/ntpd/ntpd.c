@@ -150,10 +150,6 @@ PROCESS_THREAD(ntpd_process, ev, data)
 			timeout_handler();
 			etimer_reset(&et);      // wait again SEND_INTERVAL seconds
 		}
-//else if(ev == PROCESS_EVENT_MSG)  // another application wants us to synchronise
-//    {
-//      timeout_handler();
-//    }
 #endif
 		if (etimer_expired(&et_check_c)) {
 			unsigned long check_second;

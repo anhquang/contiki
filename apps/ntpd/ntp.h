@@ -54,7 +54,7 @@
 #define CLIENT_PORT 		NTP_PORT
 #define SERVER_PORT 		NTP_PORT
 #define UIP_IP_BUF   ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
-//static struct uip_udp_conn *udpconn;
+
 /*
  * NTP Packet sizes
  */
@@ -76,7 +76,7 @@ struct time_spec ts;
 struct time_spec {
 	long sec;
 	long nsec;
-	};
+};
 static volatile int16_t adjcompare;
 static volatile unsigned long boottime;
 
