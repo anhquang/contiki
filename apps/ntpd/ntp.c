@@ -44,6 +44,7 @@
 #include "contiki-net.h"
 
 #include "ntp.h"
+#include "time.h"
 
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
@@ -67,52 +68,6 @@
 /// CAUTION: etimer is limited in Contiki to cca 500s (platform specific)
 /// so do not use TAU > 8
 
-void clock_set_time(unsigned long sec,unsigned long nsec) {
-	clock_time_t cnt,tarcnt;
-	//boottime = sec - clock_seconds();
-	clock_set_seconds(sec);
-	cnt=sec*CLOCK_SECOND + nsec * (CLOCK_SECOND / 1000000000);
-	tarcnt=sec*(CLOCK_SECOND*256)+nsec * (CLOCK_SECOND*256)/1000000000;
-	clock_set(cnt,tarcnt);
-}
-//****//
-void clock_get_time(struct time_spec *ts) {
-	rtimer_clock_t tarcounter;
-	clock_time_t tmp_scount;
-	do {
-	//	ts->sec = boottime + clock_seconds();
-		ts->sec = clock_seconds();
-		do {
-			tarcounter = clock_counter();
-			tmp_scount = clock_time();
-		} while  (tarcounter != clock_counter());
-		ts->nsec = tmp_scount * (1000000000 / CLOCK_SECOND)+tarcounter*(1000000000/(CLOCK_SECOND*256));
-	}
-	//while (ts->sec != (boottime+clock_seconds()));
-	while (ts->sec != (clock_seconds()));
-}
-//*****//
-void clock_adjust_time(struct time_spec *delta) {
-	if (delta->sec == 0L) {
-		if (delta->nsec == 0L){
-			adjcompare=0;
-			return;
-		} else {
-			adjcompare = -delta->nsec / (1000000000 / (CLOCK_SECOND*256));
-		}
-	} else {
-		adjcompare=-delta->sec * (CLOCK_SECOND * 256)+-delta->nsec / (1000000000/(CLOCK_SECOND*256));
-	}
-	if (adjcompare ==0) {
-	//do nothing//
-	} else if (adjcompare > 0) {
-		adjcompare--;
-		clock_inc_dec(adjcompare);
-	} else {
-		adjcompare++;
-		clock_inc_dec(adjcompare);
-	}
-}
 /*---------------------------------------------------------------------------*/
 void ntp_server_send(struct uip_udp_conn *udpconn) {
 	struct ntp_msg *pkt;
@@ -246,7 +201,7 @@ void ntp_adjust_time()
 			*/
 			rects.sec = uip_htonl(pkt->rectime.int_partl) - JAN_1970;
 			xmtts.sec = uip_htonl(pkt->xmttime.int_partl) - JAN_1970;
-			adjts.sec = ((rects.sec - ts.sec) + (dstts.sec - xmtts.sec)) / 2;
+			adjts.sec = ((rects.sec - ts.sec) + (xmtts.sec - dstts.sec)) / 2;
 			PRINTF("ts = %ld, rects = %ld, dstts = %ld, xmtts = %ld \n", ts.sec, rects.sec, dstts.sec, xmtts.sec);
 
 			/* Compute local clock offset for fraction part */
@@ -267,26 +222,15 @@ void ntp_adjust_time()
 		ts.sec = 0;
 #endif 
 
-/*
-#ifdef DEBUG                    // correct plus minus for printing
-		if((adjts.sec < 0) && (adjts.nsec > 0)) {
-		  adjts.sec = adjts.sec + 1;
-		  adjts.nsec = adjts.nsec - 1000000000;
-		} else if((adjts.sec > 0) && (adjts.nsec < 0)) {
-		  adjts.sec = adjts.sec - 1;
-		  adjts.nsec = adjts.nsec + 1000000000;
-		}
-#endif
-*/
 		PRINTF("Local clock offset = %ld sec %ld nsec\n", adjts.sec, adjts.nsec);
-
 		/* Set or adjust local clock */
-		if((adjts.sec) >= ADJUST_THRESHOLD) {
-		  PRINTF("Setting the time to xmttime from server\n");
-		  clock_set_time(uip_ntohl(pkt->xmttime.int_partl) - JAN_1970,uip_ntohl(pkt->xmttime.fractionl));
+		if(ABS(adjts.sec) >= ADJUST_THRESHOLD) {
+			PRINTF("Setting the time to xmttime from server\n");
+			clock_set_time(uip_ntohl(pkt->xmttime.int_partl) - JAN_1970,uip_ntohl(pkt->xmttime.fractionl));
 		} else {
-		  PRINTF("Adjusting the time for %ld and %ld\n", adjts.sec, adjts.nsec);
-		  clock_adjust_time(&adjts);
+			//with ADJUST_THRESHOLD = 0, following code would never be touch
+			PRINTF("Adjusting the time for %ld and %ld\n", adjts.sec, adjts.nsec);
+			clock_adjust_time(&adjts);
 		}
 	}
 }

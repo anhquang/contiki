@@ -41,7 +41,7 @@
 #include <string.h>
 #include "ntpd.h"
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
 #define POLL_INTERVAL (1 << TAU)
@@ -99,18 +99,14 @@ static void tcpip_handler(void) {
 PROCESS_THREAD(ntpd_process, ev, data)
 {
 	static struct etimer et;
+#if DEBUG
 	static struct etimer et_check_c;
+#endif
 
 	PROCESS_BEGIN();
-
-	PROCESS_PAUSE();
-
 	set_global_address();
 
-	PRINTF("UDP client process started\n");
-
 	client_conn = udp_new(NULL, UIP_HTONS(SERVER_PORT), NULL);        // remote server port
-
 	udp_bind(client_conn, UIP_HTONS(CLIENT_PORT));     // local client port
 
 	msg.ppoll = TAU;              // log2(poll_interval)
@@ -124,24 +120,21 @@ PROCESS_THREAD(ntpd_process, ev, data)
 	UIP_HTONS(client_conn->lport), UIP_HTONS(client_conn->rport));
 
 	etimer_set(&et, 6 * CLOCK_SECOND);
-	PRINTF ("WAIT 6 second \n");
 	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
+#if DEBUG
 	etimer_set(&et_check_c, 10 * CLOCK_SECOND);
+#endif
+
 #ifndef BROADCAST_MODE
-	// ask for time
 	msg.refid = UIP_HTONL(0x494e4954);    // INIT string in ASCII
 	timeout_handler();
 	msg.refid = 0;
-
 	etimer_set(&et, SEND_INTERVAL);       // wait SEND_INTERVAL before sending next request
-
-	PRINTF("WAIT SEND INTERVAL: %d\n",POLL_INTERVAL);
 #endif
 
 	while(1){
 		PROCESS_WAIT_EVENT();
-
 		if(ev == tcpip_event) {
 			tcpip_handler();
 		}
@@ -151,16 +144,16 @@ PROCESS_THREAD(ntpd_process, ev, data)
 			etimer_reset(&et);      // wait again SEND_INTERVAL seconds
 		}
 #endif
+
+#if DEBUG
 		if (etimer_expired(&et_check_c)) {
-			unsigned long check_second;
-			rtimer_clock_t check_clock_counter;
-			check_second=clock_seconds();
-			check_clock_counter=clock_counter();
-			PRINTF ("current time: %lu%lu,%lu%lu \n",
-					check_second/65536, check_second%65536,
-					check_clock_counter/65536, check_clock_counter%65536);
+			struct time_spec ts;
+			clock_get_time(&ts);
+			PRINTF ("current time: %lu,%lu \n",
+					ts.sec, ts.nsec);
 			etimer_reset(&et_check_c);
 		}
+#endif
 	}
 	PROCESS_END();
 }

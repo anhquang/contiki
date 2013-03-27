@@ -48,7 +48,7 @@
  */
 #define NTP_PORT             123
 #define	JAN_1970             2208988800UL    /* 1970 - 1900 in seconds */
-#define ADJUST_THRESHOLD 	0
+#define ADJUST_THRESHOLD 	0					//TODO: verify this value
 #define	NTP_VERSION			4
 #define	NTP_MAXSTRATUM		15
 #define CLIENT_PORT 		NTP_PORT
@@ -67,6 +67,8 @@ struct time_spec ts;
 #define TAU 4
 #endif /* TAU */
 
+#define ABS(x) ((x>0)? (x): -(x))
+
 //#else
 //#warning "No REMOTE_HOST defined - only NTP broadcast messages will be processed!"
 //#endif /* REMOTE_HOST */
@@ -78,7 +80,7 @@ struct time_spec {
 	long nsec;
 };
 static volatile int16_t adjcompare;
-static volatile unsigned long boottime;
+//static volatile unsigned long boottime;
 
 struct l_fixedpt {
 	uint32_t int_partl;
@@ -139,14 +141,9 @@ struct ntp_msg {
  */
 void ntp_to_ts(const struct l_fixedpt *ntp, struct time_spec *ts);
 unsigned long fractionl_to_nsec(uint32_t fractionl);
-void clock_set_time(unsigned long sec,unsigned long nsec);
-void clock_adjust_time(struct time_spec *delta);
-void clock_get_time(struct time_spec *ts);
 void ntp_server_send(struct uip_udp_conn *udpconn);
 void ntp_client_send(struct uip_udp_conn *udpconn,uip_ipaddr_t srv_ipaddr,struct ntp_msg clientmsg);
 void ntp_adjust_time();
-void
-send_unicast(struct uip_udp_conn *udpconn, uip_ipaddr_t *dest, struct ntp_msg *buf, int size);
-void
-send_broadcast(struct uip_udp_conn *udpconn, struct ntp_msg *buf, int size);
+void send_unicast(struct uip_udp_conn *udpconn, uip_ipaddr_t *dest, struct ntp_msg *buf, int size);
+void send_broadcast(struct uip_udp_conn *udpconn, struct ntp_msg *buf, int size);
 #endif /* __NTP_H__ */
