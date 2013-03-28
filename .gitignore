@@ -18,6 +18,7 @@
 *.esb
 *.avr-raven
 *.avr-atmega128rfa1
+*.avr-zigduino
 *.exp5438
 *.mb851
 *.win32
