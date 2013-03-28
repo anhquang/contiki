@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2010, University of Colombo School of Computing
- * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,67 +24,10 @@
  * SUCH DAMAGE.
  *
  * This file is part of the Contiki operating system.
- *
- * @(#)$$
  */
 
-/**
- * \file
- *         Machine dependent AVR SLIP routines for UART0.
- * \author
- *         Kasun Hewage <kasun.ch@gmail.com>
- */
-
-#include <stdio.h>
-#include "contiki.h"
-#include "dev/rs232.h"
-#include "slip.h"
+#include "ping6.h"
 
 /*---------------------------------------------------------------------------*/
-static int
-slip_putchar(char c, FILE *stream)
-{
-#define SLIP_END 0300
-  static char debug_frame = 0;
-
-  if (!debug_frame) {        /* Start of debug output */
-    slip_arch_writeb(SLIP_END);
-    slip_arch_writeb('\r'); /* Type debug line == '\r' */
-    debug_frame = 1;
-  }
-
-  slip_arch_writeb((unsigned char)c);
-          
-  /*
-   * Line buffered output, a newline marks the end of debug output and
-   * implicitly flushes debug output.         
-   */
-  if (c == '\n') {
-    slip_arch_writeb(SLIP_END);
-    debug_frame = 0;
-  }
-
-  return c;
-}
+AUTOSTART_PROCESSES(&ping6_process);
 /*---------------------------------------------------------------------------*/
-static FILE slip_stdout = FDEV_SETUP_STREAM(slip_putchar, NULL,
-                                            _FDEV_SETUP_WRITE);
-/*---------------------------------------------------------------------------*/
-void
-slip_arch_init(unsigned long ubr)
-{
-  rs232_set_input(SLIP_PORT, slip_input_byte);
-  stdout = &slip_stdout;
-}
-/*---------------------------------------------------------------------------*/
-/*
- XXX:
-      Currently, the following function is in cpu/avr/dev/rs232.c file. this
-      should be moved to here from there hence this is a platform specific slip 
-      related function. 
-void
-slip_arch_writeb(unsigned char c)
-{
-  rs232_send(RS232_PORT_0, c);
-}
-*/

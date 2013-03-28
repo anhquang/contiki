@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, University of Colombo School of Computing
+ * Copyright (c) 2006, Swedish Institute of Computer Science.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,68 +26,49 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * This file is part of the Contiki operating system.
+ * $Id: battery-sensor.c,v 1.11 2010/08/25 19:30:52 nifi Exp $
  *
- * @(#)$$
+ * -----------------------------------------------------------------
+ *
+ * Author  : Adam Dunkels, Joakim Eriksson, Niclas Finne
+ * Created : 2005-11-01
+ * Updated : $Date: 2010/08/25 19:30:52 $
+ *           $Revision: 1.11 $
  */
+
+#include "dev/battery-sensor.h"
+#include "adc.h"
+
+/* Connect Battery(+) to pin A1, via a 1000/470 voltage divider.
+ * This will case a battery voltage of 5.0V to read as the max analog
+ * voltage of 1.6V.
+ */
+#define INPUT_CHANNEL 1
+
+const struct sensors_sensor battery_sensor;
+/*---------------------------------------------------------------------------*/
 
 /**
- * \file
- *         Machine dependent AVR SLIP routines for UART0.
- * \author
- *         Kasun Hewage <kasun.ch@gmail.com>
+ * \return Voltage on battery measurement pin, 4096 is 5V.
  */
-
-#include <stdio.h>
-#include "contiki.h"
-#include "dev/rs232.h"
-#include "slip.h"
-
+static int
+value(int type)
+{
+  return readADC(INPUT_CHANNEL) * 4;
+}
 /*---------------------------------------------------------------------------*/
 static int
-slip_putchar(char c, FILE *stream)
+configure(int type, int c)
 {
-#define SLIP_END 0300
-  static char debug_frame = 0;
-
-  if (!debug_frame) {        /* Start of debug output */
-    slip_arch_writeb(SLIP_END);
-    slip_arch_writeb('\r'); /* Type debug line == '\r' */
-    debug_frame = 1;
-  }
-
-  slip_arch_writeb((unsigned char)c);
-          
-  /*
-   * Line buffered output, a newline marks the end of debug output and
-   * implicitly flushes debug output.         
-   */
-  if (c == '\n') {
-    slip_arch_writeb(SLIP_END);
-    debug_frame = 0;
-  }
-
-  return c;
+  // No configuration needed.  readADC() handles all the config needed.
+  return type == SENSORS_ACTIVE;
 }
 /*---------------------------------------------------------------------------*/
-static FILE slip_stdout = FDEV_SETUP_STREAM(slip_putchar, NULL,
-                                            _FDEV_SETUP_WRITE);
-/*---------------------------------------------------------------------------*/
-void
-slip_arch_init(unsigned long ubr)
+static int
+status(int type)
 {
-  rs232_set_input(SLIP_PORT, slip_input_byte);
-  stdout = &slip_stdout;
+  // analog sensors are always ready 
+  return 1;
 }
 /*---------------------------------------------------------------------------*/
-/*
- XXX:
-      Currently, the following function is in cpu/avr/dev/rs232.c file. this
-      should be moved to here from there hence this is a platform specific slip 
-      related function. 
-void
-slip_arch_writeb(unsigned char c)
-{
-  rs232_send(RS232_PORT_0, c);
-}
-*/
+SENSORS_SENSOR(battery_sensor, BATTERY_SENSOR, value, configure, status);
