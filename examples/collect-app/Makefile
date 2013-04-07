@@ -1,4 +1,5 @@
-PROJECT=collectd-app
+CONTIKI_PROJECT=collectd-app
+all: $(CONTIKI_PROJECT) 
 
 UIP_CONF_IPV6=1
 WITH_UIP6=1
@@ -12,5 +13,3 @@ CONTIKI=../..
 include $(CONTIKI)/Makefile.include
 
 SMALL=1
-sky:
-	make TARGET=sky collectd-app
