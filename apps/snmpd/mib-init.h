@@ -33,13 +33,13 @@
 #include "mib-constant.h"
 
 #if CONTIKI_TARGET_SKY
-#define SNMP_SYSDESCR "Sky, Contiki 2.6"
+#define SNMP_SYSDESCR "ubisen, sky, Contiki 2.6"
 #elif CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
-#define SNMP_SYSDESCR "Vmote 1.0, Contiki 2.6"
+#define SNMP_SYSDESCR "ubisen, vmote 1.0, Contiki 2.6"
 #else
 #define SNMP_SYSDESCR "Undefined HW, Contiki 2.6"
 #endif
-
+#define SNMP_SYSNAME "@ubisen"
 #define SNMP_SYSUPTIME	1234
 #define SNMP_IFDESCR	"lwpan"
 #define SNMP_IANAIFTYPE_MIB_IEEE802154 	259

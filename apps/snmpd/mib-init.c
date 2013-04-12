@@ -106,16 +106,6 @@ static ptr_t oid_entPhySensorEntry PROGMEM         = {ber_oid_entPhySensorEntry,
 
 /**** SNMPv2-MIB initialization functions ****************/
 //read only
-s8t getSysDescr(mib_object_t* object, u8t* oid, u8t len)
-{
-    if (!object->varbind.value.p_value.len) {
-        object->varbind.value.p_value.ptr = (u8t*)SNMP_SYSDESCR;
-        object->varbind.value.p_value.len = strlen(SNMP_SYSDESCR);
-    }
-    return 0;
-}
-
-//read only
 #if CONTIKI_TARGET_AVR_RAVEN
 extern unsigned long seconds;
 #else
@@ -134,6 +124,16 @@ s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
 {
     object->varbind.value.u_value = SysUpTime();
     return 0;
+}
+
+//read & write
+s8t getSysName(mib_object_t* object, u8t* oid, u8t len)
+{
+	if (!object->varbind.value.p_value.len) {
+		object->varbind.value.p_value.ptr = (u8t*)SNMP_SYSNAME;
+		object->varbind.value.p_value.len = strlen(SNMP_SYSNAME);
+	}
+	return 0;
 }
 
 /**** IF-MIB initialization functions ****************/
@@ -446,9 +446,9 @@ s8t mib_init()
 	 * SNMPv2-MIB
 	 */
 
-    if (add_scalar(&oid_system_desc, 0, BER_TYPE_OCTET_STRING, 0, &getSysDescr, 0) == -1 ||
+    if (add_scalar(&oid_system_desc, 0, BER_TYPE_OCTET_STRING, SNMP_SYSDESCR, 0, 0) == -1 ||
         add_scalar(&oid_system_time, 0, BER_TYPE_TIME_TICKS, 0, &getSysUpTime, 0) == -1  ||
-        add_scalar(&oid_system_system, 0,BER_TYPE_OCTET_STRING, "snmp, modi by nqd", 0, 0) == -1) {
+        add_scalar(&oid_system_system, 0,BER_TYPE_OCTET_STRING, 0, &getSysName, 0) == -1) {
         	return -1;
     }
 
