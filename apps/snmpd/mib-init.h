@@ -31,15 +31,26 @@
 
 #include "mib.h"
 
+#if CONTIKI_TARGET_SKY
+#define SNMP_SYSDESCR "Sky, Contiki 2.6"
+
+#elif CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
+#define SNMP_SYSDESCR "Vmote 1.0, Contiki 2.6"
+
+#else
+#define SNMP_SYSDESCR "Undefined HW, Contiki 2.6"
+#endif
+
+#define SNMP_SYSUPTIME	1234
+#define SNMP_IFDESCR	"lwpan"
+#define SNMP_IANAIFTYPE_MIB_IEEE802154 	259
+#define SNMP_MTU_IEEE802154				127
+#define SNMP_SPEED_IEEE802154			250000
 /**
  * Adds all necessary object to the MIB. Should be changed if a new object needs to be added to the MIB.
  * \brief Initializes the MIB objects.
  */
 s8t mib_init();
-
-#define IANAIFTYPE_MIB_IEEE802154 	259
-#define MTU_IEEE802154				127
-#define SPEED_IEEE802154			250000
 
 #define SIMULATION			1
 #endif	/* __MIBINIT_H__ */

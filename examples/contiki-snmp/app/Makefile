@@ -19,7 +19,6 @@ econotag:
 	make TARGET=econotag MIB_INIT=mib-init.c snmp-server.elf
 
 sky: 
-#	CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
 
 avr-atmega128rfa1:

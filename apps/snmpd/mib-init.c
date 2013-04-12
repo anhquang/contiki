@@ -52,7 +52,7 @@ static ptr_t oid_system_ortable PROGMEM      = {ber_oid_system_ortable, 8};
 
 /*
  * IF-MIB
- * NOTE: I change iftable into table, not scala anymore.
+ *NOTE: I change iftable into table, not scala anymore.
  */
 static u8t ber_oid_if_number[] PROGMEM    = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x02, 0x01, 0x00};
 static ptr_t oid_if_number PROGMEM        = {ber_oid_if_number, 8};
@@ -103,25 +103,35 @@ static ptr_t oid_entPhySensorEntry PROGMEM         = {ber_oid_entPhySensorEntry,
 
 
 /**** SNMPv2-MIB initialization functions ****************/
+//read only
 s8t getSysDescr(mib_object_t* object, u8t* oid, u8t len)
 {
     if (!object->varbind.value.p_value.len) {
-        object->varbind.value.p_value.ptr = (u8t*)"Contiki SNMP";
-        object->varbind.value.p_value.len = strlen("Contiki SNMP");
+        object->varbind.value.p_value.ptr = (u8t*)SNMP_SYSDESCR;
+        object->varbind.value.p_value.len = strlen(SNMP_SYSDESCR);
     }
     return 0;
 }
 
-s8t setSysDescr(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
+//read only
+#if CONTIKI_TARGET_AVR_RAVEN
+extern unsigned long seconds;
+#else
+clock_time_t systemStartTime;
+#endif
+
+u32t SysUpTime()
 {
-    object->varbind.value.p_value.ptr = (u8t*)"System Description2";
-    object->varbind.value.p_value.len = 19;
-    return 0;
+    #if CONTIKI_TARGET_AVR_RAVEN
+        return seconds * 100;
+    #else
+        return (clock_time() - systemStartTime)/ 10;
+    #endif
 }
 
-s8t getTimeTicks(mib_object_t* object, u8t* oid, u8t len)
+s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
 {
-    object->varbind.value.u_value = 1234;
+    object->varbind.value.u_value = SysUpTime();
     return 0;
 }
 
@@ -162,26 +172,26 @@ s8t getIf(mib_object_t* object, u8t* oid, u8t len)
 			break;
 		case ifDescr:
 			object->varbind.value_type = BER_TYPE_OCTET_STRING;
-			object->varbind.value.p_value.ptr = (u8t*)"lwpan";
-			object->varbind.value.p_value.len = strlen("lwpan");
+			object->varbind.value.p_value.ptr = (u8t*)SNMP_IFDESCR;
+			object->varbind.value.p_value.len = strlen(SNMP_IFDESCR);
 			break;
         case ifType:
         	object->varbind.value_type = BER_TYPE_INTEGER;
-        	object->varbind.value.i_value = IANAIFTYPE_MIB_IEEE802154;
+        	object->varbind.value.i_value = SNMP_IANAIFTYPE_MIB_IEEE802154;
         	break;
         case ifMtu:
         	object->varbind.value_type = BER_TYPE_INTEGER;
-        	object->varbind.value.i_value = MTU_IEEE802154;			//ianaiftype-mib ieee802.15.4 type
+        	object->varbind.value.i_value = SNMP_MTU_IEEE802154;			//ianaiftype-mib ieee802.15.4 type
         	break;
         case ifSpeed:
         	object->varbind.value_type = BER_TYPE_GAUGE;
-        	object->varbind.value.u_value = SPEED_IEEE802154;
+        	object->varbind.value.u_value = SNMP_SPEED_IEEE802154;
         	break;
         case ifPhysAddress:
         	object->varbind.value_type = BER_TYPE_OCTET_STRING;
 			object->varbind.value.p_value.ptr = (u8t*)&rimeaddr_node_addr;
 			//object->varbind.value.p_value.ptr = (u8t*)"MAC Add";
-			object->varbind.value.p_value.len = 8;
+			object->varbind.value.p_value.len = sizeof((u8t*)&rimeaddr_node_addr);
         	break;
         default:
             break;
@@ -529,8 +539,8 @@ s8t mib_init()
 	 * SNMPv2-MIB
 	 */
 
-    if (add_scalar(&oid_system_desc, 0, BER_TYPE_OCTET_STRING, 0, &getSysDescr, &setSysDescr) == -1 ||
-        add_scalar(&oid_system_time, 0, BER_TYPE_TIME_TICKS, 0, &getTimeTicks, 0) == -1  ||
+    if (add_scalar(&oid_system_desc, 0, BER_TYPE_OCTET_STRING, 0, &getSysDescr, 0) == -1 ||
+        add_scalar(&oid_system_time, 0, BER_TYPE_TIME_TICKS, 0, &getSysUpTime, 0) == -1  ||
         add_scalar(&oid_system_system, 0,BER_TYPE_OCTET_STRING, "snmp, modi by nqd", 0, 0) == -1) {
         	return -1;
     }

@@ -19,6 +19,12 @@
  *
  */
 
+/*
+ * Nguyen Quoc Dinh <nqdinh@iuh.edu.vn
+ * Dec, 2-2012
+ *
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,22 +45,6 @@
 static struct uip_udp_conn *udpconn;
 
 PROCESS(snmpd_process, "SNMP daemon process");
-
-
-#if CONTIKI_TARGET_AVR_RAVEN
-extern unsigned long seconds;
-#else
-clock_time_t systemStartTime;
-#endif
-
-u32t getSysUpTime()
-{
-    #if CONTIKI_TARGET_AVR_RAVEN
-        return seconds * 100;
-    #else
-        return (clock_time() - systemStartTime)/ 10;
-    #endif
-}
 
 #if CHECK_STACK_SIZE
 int max = 0;
@@ -143,7 +133,7 @@ PROCESS_THREAD(snmpd_process, ev, data) {
 	PROCESS_BEGIN();
 
         #ifndef CONTIKI_TARGET_AVR_RAVEN
-        systemStartTime = clock_time();
+        //systemStartTime = clock_time();
         #endif
 
         #if CHECK_STACK_SIZE
