@@ -6,10 +6,12 @@
 #include "logging.h"
 
 #include "net/rime.h"
+#include "mib-constant.h"
 
 #if SIMULATION
 #include "lib/random.h"
 #endif
+
 
 #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
 #include <avr/pgmspace.h>
@@ -119,7 +121,6 @@ extern unsigned long seconds;
 #else
 clock_time_t systemStartTime;
 #endif
-
 u32t SysUpTime()
 {
     #if CONTIKI_TARGET_AVR_RAVEN
@@ -136,15 +137,6 @@ s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
 }
 
 /**** IF-MIB initialization functions ****************/
-#define IFNUMBER 1					//by default, there is only one connection on each mote
-#define ifIndex 1
-#define ifDescr 2
-#define ifType	3
-#define ifMtu	4
-#define ifSpeed	5
-#define ifPhysAddress	6
-#define IFENTRYMAX ifPhysAddress
-
 s8t getIfNumber(mib_object_t* object, u8t* oid, u8t len)
 {
     object->varbind.value.i_value = IFNUMBER;
@@ -190,8 +182,7 @@ s8t getIf(mib_object_t* object, u8t* oid, u8t len)
         case ifPhysAddress:
         	object->varbind.value_type = BER_TYPE_OCTET_STRING;
 			object->varbind.value.p_value.ptr = (u8t*)&rimeaddr_node_addr;
-			//object->varbind.value.p_value.ptr = (u8t*)"MAC Add";
-			object->varbind.value.p_value.len = sizeof((u8t*)&rimeaddr_node_addr);
+			object->varbind.value.p_value.len = sizeof(rimeaddr_t);
         	break;
         default:
             break;
@@ -237,46 +228,12 @@ ptr_t* getNextIfOid(mib_object_t* object, u8t* oid, u8t len)
 /*end IF-MIB initialization functions*/
 
 /* -------- ENTITY-MIB initialization functions --------------*/
-#define PHYSICALNUMBER		3		//chassis, cpu, port, sensor x3 (temper + rssi + kwh meter)
-#define entPhysicalIndex	1
-#define entPhysicalDescr	2
-#define entPhysicalVendorType	3
-#define	entPhysicalContainedIn	4
-#define entPhysicalClass		5
-#define entPhysicalParentRelPos	6
-#define entPhysicalName			7
-#define entPhysicalHardwareRev	8
-#define entPhysicalFirmwareRev	9
-#define	entPhysicalSoftwareRev	10
-#define entPhysicalSerialNum	11
-#define	entPhysicalMfgName		12
-#define entPhysicalModelName	13
-#define entPhysicalAlias		14
-#define	entPhysicalAssetID		15
-#define entPhysicalIsFRU		16
-#define entPhysicalMfgDate		17
-#define entPhysicalUris			18
-#define PHYSICALENTRYMAX 		entPhysicalClass
-
-#define PHYCLASS_OTHER		1
-#define	PHYCLASS_UNKNOWN		2
-#define	PHYCLASS_CHASSIS		3
-#define	PHYCLASS_BACKPLANE		4
-#define	PHYCLASS_CONTAINER		5
-#define	PHYCLASS_POWERSUPPLY	6
-#define	PHYCLASS_FAN		7
-#define	PHYCLASS_SENSOR		8
-#define	PHYCLASS_MODULE		9
-#define	PHYCLASS_PORT		10
-#define	PHYCLASS_STACK		11
-#define	PHYCLASS_CPU		12
-
 s8t getEntityPhysicalEntry(mib_object_t* object, u8t* oid, u8t len) {
     u32t oid_el1, oid_el2;
     u8t i;
-    u8t entPhysicalVendorTypeValue[] PROGMEM = {0, 0};
-    char entPhysicalClassValue[] PROGMEM ={PHYCLASS_CHASSIS, PHYCLASS_CPU, PHYCLASS_PORT, PHYCLASS_SENSOR, PHYCLASS_SENSOR, PHYCLASS_SENSOR};
-    char *entPhysicalDescrValue[] PROGMEM = {"Sky", "MSP430", "802.15.4 NI", "Temp Sensor", "802.15.4 RSSI Sensor", "kWh Meter"};
+    u8t entPhysicalVendorTypeValue[] PROGMEM = ENT_PHYSICAL_VENDOR_TYPE_VALUE;
+    char entPhysicalClassValue[] PROGMEM = ENT_PHYSICAL_CLASS_VALUE;
+    char *entPhysicalDescrValue[] PROGMEM = ENT_PHYSICAL_DESCR_VALUE;
 
     i = ber_decode_oid_item(oid, len, &oid_el1);
     i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
@@ -300,9 +257,6 @@ s8t getEntityPhysicalEntry(mib_object_t* object, u8t* oid, u8t len) {
 
 		break;
     case entPhysicalVendorType:
-    	//i have no registration for this mote id, hence, the default value would be {0 0}
-    	entPhysicalVendorTypeValue[0] = 0;
-    	entPhysicalVendorTypeValue[1] = 0;
     	object->varbind.value_type = BER_TYPE_OID;
     	object->varbind.value.p_value.ptr = entPhysicalVendorTypeValue;
     	object->varbind.value.p_value.len = 3;			//TODO: why 3 but not 2?
@@ -375,64 +329,17 @@ ptr_t* getNextPhysicalEntryOid(mib_object_t* object, u8t* oid, u8t len) {
 
 
 /* -------- ENTITY-SENSOR_MIB initialization functions --------------*/
-#define SENSORNUMBER 		3				//have 3 sensors: (temperature + rssi + kwh meter). See ENTITY-MIB
-
-#define entPhySensorType	1
-#define entPhySensorScale	2
-#define entPhySensorPrecision	3
-#define entPhySensorValue		4
-#define entPhySensorOperStatus	5
-#define entPhySensorUnitsDisplay	6
-#define	entPhySensorValueTimeStamp	7
-#define entPhySensorValueUpdateRate	8
-#define SENSORENTRYMAX 				entPhySensorValueUpdateRate
-
-#define SENSORDATATYPE_OTHER	1
-#define SENSORDATATYPE_UNKNOWN	2
-#define SENSORDATATYPE_VOLTSAC	3
-#define SENSORDATATYPE_VOLTDC	4
-#define SENSORDATATYPE_AMPERES	5
-#define SENSORDATATYPE_WATTS	6
-#define SENSORDATATYPE_HERTZ	7
-#define SENSORDATATYPE_CELSIUS	8
-#define SENSORDATATYPE_PERCENTRH	9
-#define SENSORDATATYPE_RPM		10
-#define SENSORDATATYPE_CMM		11
-#define SENSORDATATYPE_TRUTHVALUE	12
-
-#define SENSORDATASCALE_YOCTO	1
-#define SENSORDATASCALE_ZEPTO	2
-#define SENSORDATASCALE_ATTO	3
-#define SENSORDATASCALE_FEMTO	4
-#define SENSORDATASCALE_PICO	5
-#define SENSORDATASCALE_NANO	6
-#define SENSORDATASCALE_MICRO	7
-#define SENSORDATASCALE_MILLI	8
-#define SENSORDATASCALE_UNIT	9
-#define SENSORDATASCALE_KILO	10
-#define SENSORDATASCALE_MEGA	11
-#define SENSORDATASCALE_GIGA	12
-#define SENSORDATASCALE_TERA	13
-#define SENSORDATASCALE_EXA		14
-#define SENSORDATASCALE_PETA	15
-#define SENSORDATASCALE_ZETTA	16
-#define SENSORDATASCALE_YOTTA	17
-
-#define SENSORSTATUS_OK		1
-#define SENSORSTATUS_UNAVAILABLE	2
-#define SENSORSTATUS_NONOPERATIONAL	3
-
 s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len) {
     u32t oid_el1, oid_el2;
     u8t i;
     //have 3 sensors: (temperature + rssi + kwh meter). See ENTITY-MIB
-    s32t entPhySensorTypeValue[] PROGMEM = 		{SENSORDATATYPE_CELSIUS, SENSORDATATYPE_OTHER, SENSORDATATYPE_WATTS};
-    s32t entPhySensorScaleValue[] PROGMEM = 		{SENSORDATASCALE_UNIT, SENSORDATASCALE_UNIT, SENSORDATASCALE_UNIT};
-    s32t entPhySensorPrecisionValue[] PROGMEM = 	{0, 0, 0};		//value range from [-8, 9]
-    s32t entPhySensorOperStatusValue[] PROGMEM = {SENSORSTATUS_OK, SENSORSTATUS_OK, SENSORSTATUS_OK};
-    char *entPhySensorUnitsDisplayValue[] PROGMEM = 	{"Cel", "dB", "W"};
-    int entPhySensorValueTimeStampValue[] PROGMEM =		{1234, 1234, 1234};
-    unsigned int entPhySensorValueUpdateRateValue[] PROGMEM = 	{10000, 10000, 10000};			//in milliseconds
+    s32t entPhySensorTypeValue[] PROGMEM = 				ENT_PHYSENSOR_TYPE_VALUE;
+    s32t entPhySensorScaleValue[] PROGMEM = 			ENT_PHYSENSOR_SCALE_VALUE;
+    s32t entPhySensorPrecisionValue[] PROGMEM = 		ENT_PHYSENSOR_PRECISION_VALUE;
+    s32t entPhySensorOperStatusValue[] PROGMEM = 		ENT_PHYSENSOR_OPER_STATUS_VALUE;
+    char *entPhySensorUnitsDisplayValue[] PROGMEM = 	ENT_PHYSENSOR_UNITS_DISPLAY_VALUE;
+    int entPhySensorValueTimeStampValue[] PROGMEM =		ENT_PHYSENSOR_VALUE_TIMESTAMP_VALUE;
+    unsigned int entPhySensorValueUpdateRateValue[] PROGMEM = ENT_PHYSENSOR_VALUE_UPDATE_RATE_VALUE;			//in milliseconds
 
     i = ber_decode_oid_item(oid, len, &oid_el1);
     i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
