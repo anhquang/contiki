@@ -39,7 +39,7 @@
 #else
 #define SNMP_SYSDESCR "Undefined HW, Contiki 2.6"
 #endif
-#define SNMP_SYSNAME "@ubisen"
+#define SNMP_SYSNAME "@ubisen ltd vn"
 #define SNMP_SYSUPTIME	1234
 #define SNMP_IFDESCR	"lwpan"
 #define SNMP_IANAIFTYPE_MIB_IEEE802154 	259
@@ -65,7 +65,7 @@
 #define ENT_PHYSENSOR_OPER_STATUS_VALUE			{SENSORSTATUS_OK, SENSORSTATUS_OK, SENSORSTATUS_OK, SENSORSTATUS_OK}
 #define ENT_PHYSENSOR_UNITS_DISPLAY_VALUE		{"Cel", "dB", "W", "W"}
 #define ENT_PHYSENSOR_VALUE_TIMESTAMP_VALUE		{1234, 1234, 1234, 1234}
-#define ENT_PHYSENSOR_VALUE_UPDATE_RATE_VALUE	{10000, 10000, 10000, 10000};	//in milliseconds
+#define ENT_PHYSENSOR_VALUE_UPDATE_RATE_VALUE	{0, 0, 0, 0};	//in milliseconds
 
 /**
  * Adds all necessary object to the MIB. Should be changed if a new object needs to be added to the MIB.

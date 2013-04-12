@@ -103,9 +103,14 @@ static ptr_t oid_entPhysicalEntry PROGMEM         = {ber_oid_entPhysicalEntry, 1
 static u8t ber_oid_entPhySensorEntry[] PROGMEM     = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x63, 0x01, 0x01, 0x01};
 static ptr_t oid_entPhySensorEntry PROGMEM         = {ber_oid_entPhySensorEntry, 9};
 
+/* oid value variable */
+#define SYSNAME_LEN		20
+static char sysname[SYSNAME_LEN];
+static u8t sysnamelen;
+
 
 /**** SNMPv2-MIB initialization functions ****************/
-//read only
+
 #if CONTIKI_TARGET_AVR_RAVEN
 extern unsigned long seconds;
 #else
@@ -119,7 +124,7 @@ u32t SysUpTime()
         return (clock_time() - systemStartTime)/ 10;
     #endif
 }
-
+//read only
 s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
 {
     object->varbind.value.u_value = SysUpTime();
@@ -130,8 +135,21 @@ s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
 s8t getSysName(mib_object_t* object, u8t* oid, u8t len)
 {
 	if (!object->varbind.value.p_value.len) {
-		object->varbind.value.p_value.ptr = (u8t*)SNMP_SYSNAME;
-		object->varbind.value.p_value.len = strlen(SNMP_SYSNAME);
+		object->varbind.value.p_value.ptr = sysname;
+		object->varbind.value.p_value.len = sysnamelen;
+	}
+	return 0;
+}
+s8t setSysName(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
+{
+	u8t i;
+	if (!object->varbind.value.p_value.len < SYSNAME_LEN) {
+		memset(sysname, 0, SYSNAME_LEN);
+		for (i=0; i<value.p_value.len; i++){
+			sysname[i] = value.p_value.ptr[i];
+		}
+		sysnamelen = value.p_value.len;
+		printf("get: %s, len=%d or %d\n", value.p_value.ptr, sysnamelen, len);
 	}
 	return 0;
 }
@@ -434,21 +452,29 @@ ptr_t* getNextPhySensorEntryOid(mib_object_t* object, u8t* oid, u8t len) {
 /*ENTITY-SENSOR-MIB initialization functions*/
 
 
-
-
+/*
+ * initialize oid value *
+ */
+void oid_val_init()
+{
+	strcpy(sysname, (u8t*)SNMP_SYSNAME);
+	sysnamelen = strlen(SNMP_SYSNAME);
+}
 
 /*
  * Initialize the MIB.
  */
 s8t mib_init()
 {
+	oid_val_init();
+
 	/*
 	 * SNMPv2-MIB
 	 */
 
     if (add_scalar(&oid_system_desc, 0, BER_TYPE_OCTET_STRING, SNMP_SYSDESCR, 0, 0) == -1 ||
         add_scalar(&oid_system_time, 0, BER_TYPE_TIME_TICKS, 0, &getSysUpTime, 0) == -1  ||
-        add_scalar(&oid_system_system, 0,BER_TYPE_OCTET_STRING, 0, &getSysName, 0) == -1) {
+        add_scalar(&oid_system_system, 0,BER_TYPE_OCTET_STRING, 0, &getSysName, &setSysName) == -1) {
         	return -1;
     }
 
