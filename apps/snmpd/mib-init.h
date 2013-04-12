@@ -29,6 +29,7 @@
 #ifndef __MIBINIT_H__
 #define	__MIBINIT_H__
 
+#include <stdlib.h>
 #include "mib.h"
 #include "mib-constant.h"
 

@@ -1,4 +1,10 @@
-#include <stdlib.h>
+/* TODO:
+ * 	save some setting to FLASH
+ * 	timesticks
+ * 	physical vendor type
+ * CHANGE:
+ * 	number of sensors
+ */
 
 #include "mib-init.h"
 #include "ber.h"
@@ -11,7 +17,6 @@
 #if SIMULATION
 #include "lib/random.h"
 #endif
-
 
 #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
 #include <avr/pgmspace.h>
@@ -154,6 +159,42 @@ s8t setSysName(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
 	return 0;
 }
 
+ptr_t* getNextOid(mib_object_t* object, u8t* oid, u8t len, u8t ENTRYMAX, u8t NUMBER)
+{
+    u32t oid_el1, oid_el2;
+    u8t i;
+    i = ber_decode_oid_item(oid, len, &oid_el1);
+    i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
+
+    /* oid_el1 = [1..ENTRYMAX]
+     * oid_el2 = [1..NUMBER]
+     */
+
+    if (oid_el1 < ENTRYMAX || (oid_el1 == ENTRYMAX && oid_el2 < NUMBER)) {
+        ptr_t* ret = oid_create();
+        CHECK_PTR_U(ret);
+        ret->len = 2;
+        ret->ptr = malloc(2);
+        CHECK_PTR_U(ret->ptr);
+        if (oid_el2 < NUMBER) {
+        	oid_el2++;
+        } else if (oid_el2 >= NUMBER) {
+        	if (oid_el1 < ENTRYMAX) {
+        		oid_el1++;
+        		oid_el2 = 1;
+        	} else {
+        		return 0;
+        	}
+        }
+        if (oid_el1 < 1) oid_el1 = 1;
+        if (oid_el2 < 1) oid_el2 = 1;
+        ret->ptr[0] = oid_el1;
+        ret->ptr[1] = oid_el2;
+        return ret;
+    }
+    return 0;
+}
+
 /**** IF-MIB initialization functions ****************/
 s8t getIfNumber(mib_object_t* object, u8t* oid, u8t len)
 {
@@ -191,7 +232,7 @@ s8t getIf(mib_object_t* object, u8t* oid, u8t len)
         	break;
         case ifMtu:
         	object->varbind.value_type = BER_TYPE_INTEGER;
-        	object->varbind.value.i_value = SNMP_MTU_IEEE802154;			//ianaiftype-mib ieee802.15.4 type
+        	object->varbind.value.i_value = SNMP_MTU_IEEE802154;
         	break;
         case ifSpeed:
         	object->varbind.value_type = BER_TYPE_GAUGE;
@@ -210,38 +251,7 @@ s8t getIf(mib_object_t* object, u8t* oid, u8t len)
 
 ptr_t* getNextIfOid(mib_object_t* object, u8t* oid, u8t len)
 {
-    u32t oid_el1, oid_el2;
-    u8t i;
-    i = ber_decode_oid_item(oid, len, &oid_el1);
-    i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
-
-    /* oid_el1 = [1..IFENTRYMAX]
-     * oid_el2 = [1..IFNUMBER]
-     */
-
-    if (oid_el1 < IFENTRYMAX || (oid_el1 == IFENTRYMAX && oid_el2 < IFNUMBER)) {
-        ptr_t* ret = oid_create();
-        CHECK_PTR_U(ret);
-        ret->len = 2;
-        ret->ptr = malloc(2);
-        CHECK_PTR_U(ret->ptr);
-        if (oid_el2 < IFNUMBER) {
-        	oid_el2++;
-        } else if (oid_el2 >= IFNUMBER) {
-        	if (oid_el1 < IFENTRYMAX) {
-        		oid_el1++;
-        		oid_el2 = 1;
-        	} else {
-        		return 0;
-        	}
-        }
-        if (oid_el1 < 1) oid_el1 = 1;
-        if (oid_el2 < 1) oid_el2 = 1;
-        ret->ptr[0] = oid_el1;
-        ret->ptr[1] = oid_el2;
-        return ret;
-    }
-    return 0;
+    return getNextOid(object, oid, len, IFENTRYMAX, IFNUMBER);
 }
 /*end IF-MIB initialization functions*/
 
@@ -309,45 +319,16 @@ s8t getEntityPhysicalEntry(mib_object_t* object, u8t* oid, u8t len) {
     return 0;
 }
 
-ptr_t* getNextPhysicalEntryOid(mib_object_t* object, u8t* oid, u8t len) {
-    u32t oid_el1, oid_el2;
-    u8t i;
-    i = ber_decode_oid_item(oid, len, &oid_el1);
-    i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
-
-    /* oid_el1 = [1..PHYSICALENTRYMAX]
-     * oid_el2 = [1..PHYSICALNUMBER]
-     */
-
-    if (oid_el1 < PHYSICALENTRYMAX || (oid_el1 == PHYSICALENTRYMAX && oid_el2 < PHYSICALNUMBER)) {
-        ptr_t* ret = oid_create();
-        CHECK_PTR_U(ret);
-        ret->len = 2;
-        ret->ptr = malloc(2);
-        CHECK_PTR_U(ret->ptr);
-        if (oid_el2 < PHYSICALNUMBER) {
-        	oid_el2++;
-        } else if (oid_el2 >= PHYSICALNUMBER) {
-        	if (oid_el1 < PHYSICALENTRYMAX) {
-        		oid_el1++;
-        		oid_el2 = 1;
-        	} else {
-        		return 0;
-        	}
-        }
-        if (oid_el1 < 1) oid_el1 = 1;
-        if (oid_el2 < 1) oid_el2 = 1;
-        ret->ptr[0] = oid_el1;
-        ret->ptr[1] = oid_el2;
-        return ret;
-    }
-    return 0;
+ptr_t* getNextPhysicalEntryOid(mib_object_t* object, u8t* oid, u8t len)
+{
+	return getNextOid(object, oid, len, PHYSICALENTRYMAX, PHYSICALNUMBER);
 }
 /*ENTITY-MIB initialization functions*/
 
 
 /* -------- ENTITY-SENSOR_MIB initialization functions --------------*/
-s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len) {
+s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len)
+{
     u32t oid_el1, oid_el2;
     u8t i;
     //have 3 sensors: (temperature + rssi + kwh meter). See ENTITY-MIB
@@ -415,39 +396,9 @@ s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len) {
     return 0;
 }
 
-ptr_t* getNextPhySensorEntryOid(mib_object_t* object, u8t* oid, u8t len) {
-    u32t oid_el1, oid_el2;
-    u8t i;
-    i = ber_decode_oid_item(oid, len, &oid_el1);
-    i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
-
-    /* oid_el1 = [1..SENSORENTRYMAX]
-     * oid_el2 = [1..SENSORNUMBER]
-     */
-
-    if (oid_el1 < SENSORENTRYMAX || (oid_el1 == SENSORENTRYMAX && oid_el2 < SENSORNUMBER)) {
-        ptr_t* ret = oid_create();
-        CHECK_PTR_U(ret);
-        ret->len = 2;
-        ret->ptr = malloc(2);
-        CHECK_PTR_U(ret->ptr);
-        if (oid_el2 < SENSORNUMBER) {
-        	oid_el2++;
-        } else if (oid_el2 >= SENSORNUMBER) {
-        	if (oid_el1 < SENSORENTRYMAX) {
-        		oid_el1++;
-        		oid_el2 = 1;
-        	} else {
-        		return 0;
-        	}
-        }
-        if (oid_el1 < 1) oid_el1 = 1;
-        if (oid_el2 < 1) oid_el2 = 1;
-        ret->ptr[0] = oid_el1;
-        ret->ptr[1] = oid_el2;
-        return ret;
-    }
-    return 0;
+ptr_t* getNextPhySensorEntryOid(mib_object_t* object, u8t* oid, u8t len)
+{
+	return getNextOid(object, oid, len, SENSORENTRYMAX, SENSORNUMBER);
 }
 /*ENTITY-SENSOR-MIB initialization functions*/
 
