@@ -14,6 +14,8 @@
 #include "net/rime.h"
 #include "mib-constant.h"
 
+#include "cfs/cfs.h"
+
 #if SIMULATION
 #include "lib/random.h"
 #endif
@@ -56,7 +58,6 @@ static u8t ber_oid_system_ortable[] PROGMEM  = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x
 static ptr_t oid_system_ortable PROGMEM      = {ber_oid_system_ortable, 8};
 */
 
-
 /*
  * IF-MIB
  *NOTE: I change iftable into table, not scala anymore.
@@ -66,33 +67,6 @@ static ptr_t oid_if_number PROGMEM        = {ber_oid_if_number, 8};
 
 static u8t ber_oid_if_table[] PROGMEM     = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01};
 static ptr_t oid_if_table PROGMEM         = {ber_oid_if_table, 8};
-
-/*
- * IP-MIB
- * both ipv4 and ipv6
- * however, i pay attention to v6 only
- */
-/*
-static u8t ber_oid_ipAddress_ifIndex[] PROGMEM	= {};
-static ptr_t oid_ipAddress_ifindex				= {ber_oid_ipAddress_ifIndex, 10};
-
-static u8t ber_oid_ipAddress_ifIndex[] PROGMEM	= {};
-static ptr_t oid_ipAddress_ifindex				= {ber_oid_ipAddress_ifIndex, 10};
-
-static u8t ber_oid_ipAddress_ifIndex[] PROGMEM	= {};
-static ptr_t oid_ipAddress_ifindex				= {ber_oid_ipAddress_ifIndex, 10};
-
-static u8t ber_oid_ipAddress_ifIndex[] PROGMEM	= {};
-static ptr_t oid_ipAddress_ifindex				= {ber_oid_ipAddress_ifIndex, 10};
-
-static u8t ber_oid_ipAdEntAddr[] PROGMEM  = {0x2b, 6, 1, 2, 1, 4, 20, 1, 1};
-static ptr_t oid_ipAdEntAddr PROGMEM	  = {ber_oid_ipAdEntAddr, 9};
-
-static u8t ber_oid_test_int[] PROGMEM     = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x89, 0x52, 0x01, 0x00};
-static ptr_t oid_test_int PROGMEM         = {ber_oid_test_int, 9};
-static u8t ber_oid_test_uint[] PROGMEM    = {0x2b, 0x06, 0x01, 0x02, 0x01, 0x89, 0x52, 0x02, 0x00};
-static ptr_t oid_test_uint PROGMEM        = {ber_oid_test_uint, 9};
-*/
 
 /*
  * ENTITY-MIB
@@ -109,55 +83,31 @@ static u8t ber_oid_entPhySensorEntry[] PROGMEM     = {0x2b, 0x06, 0x01, 0x02, 0x
 static ptr_t oid_entPhySensorEntry PROGMEM         = {ber_oid_entPhySensorEntry, 9};
 
 /* oid value variable */
-#define SYSNAME_LEN		20
-static char sysname[SYSNAME_LEN];
-static u8t sysnamelen;
 
+static struct snmp_sysname_t sysname;
 
-/**** SNMPv2-MIB initialization functions ****************/
-
-#if CONTIKI_TARGET_AVR_RAVEN
-extern unsigned long seconds;
-#else
-clock_time_t systemStartTime;
+#if CONTIKI_TARGET_ZIGD
+int snmp_fs_write(void *data, u8t len, u8t *filename) {
+	int fd_write;
+	fd_write = cfs_open(filename, CFS_WRITE);
+	if(fd_write != -1) {
+		cfs_write(fd_write, data, len);
+		cfs_close(fd_write);
+		return 0;
+	}
+	return -1;
+}
+int snmp_fs_read(void *data, u8t len, u8t *filename) {
+	int fd_read;
+	fd_read = cfs_open(filename, CFS_READ);
+	if(fd_read != -1) {
+		cfs_read(fd_read, data, len);
+		cfs_close(fd_read);
+		return 0;
+	}
+	return -1;
+}
 #endif
-u32t SysUpTime()
-{
-    #if CONTIKI_TARGET_AVR_RAVEN
-        return seconds * 100;
-    #else
-        return (clock_time() - systemStartTime)/ 10;
-    #endif
-}
-//read only
-s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
-{
-    object->varbind.value.u_value = SysUpTime();
-    return 0;
-}
-
-//read & write
-s8t getSysName(mib_object_t* object, u8t* oid, u8t len)
-{
-	if (!object->varbind.value.p_value.len) {
-		object->varbind.value.p_value.ptr = sysname;
-		object->varbind.value.p_value.len = sysnamelen;
-	}
-	return 0;
-}
-s8t setSysName(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
-{
-	u8t i;
-	if (!object->varbind.value.p_value.len < SYSNAME_LEN) {
-		memset(sysname, 0, SYSNAME_LEN);
-		for (i=0; i<value.p_value.len; i++){
-			sysname[i] = value.p_value.ptr[i];
-		}
-		sysnamelen = value.p_value.len;
-		printf("get: %s, len=%d or %d\n", value.p_value.ptr, sysnamelen, len);
-	}
-	return 0;
-}
 
 ptr_t* getNextOid(mib_object_t* object, u8t* oid, u8t len, u8t ENTRYMAX, u8t NUMBER)
 {
@@ -193,6 +143,55 @@ ptr_t* getNextOid(mib_object_t* object, u8t* oid, u8t len, u8t ENTRYMAX, u8t NUM
         return ret;
     }
     return 0;
+}
+
+/**** SNMPv2-MIB initialization functions ****************/
+
+#if CONTIKI_TARGET_AVR_RAVEN
+extern unsigned long seconds;
+#else
+clock_time_t systemStartTime;
+#endif
+u32t SysUpTime()
+{
+    #if CONTIKI_TARGET_AVR_RAVEN
+        return seconds * 100;
+    #else
+        return (clock_time() - systemStartTime)/ 10;
+    #endif
+}
+//read only
+s8t getSysUpTime(mib_object_t* object, u8t* oid, u8t len)
+{
+    object->varbind.value.u_value = SysUpTime();
+    return 0;
+}
+
+//read & write
+s8t getSysName(mib_object_t* object, u8t* oid, u8t len)
+{
+	if (!object->varbind.value.p_value.len) {
+		object->varbind.value.p_value.ptr = sysname.sysname;
+		object->varbind.value.p_value.len = sysname.sysnamelen;
+	}
+	return 0;
+}
+s8t setSysName(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
+{
+	u8t i;
+	if (!object->varbind.value.p_value.len < SYSNAME_LEN) {
+		memset(sysname.sysname, 0, SYSNAME_LEN);
+		for (i=0; i<value.p_value.len; i++){
+			sysname.sysname[i] = value.p_value.ptr[i];
+		}
+		sysname.sysnamelen = value.p_value.len;
+
+		//save to flash, for Vmote only, since sky run out of rom already
+#if CONTIKI_TARGET_ZIGD
+		snmp_fs_write(&sysname, sizeof(struct snmp_sysname_t), SYSNAME_FS_FILENAME);
+#endif
+	}
+	return 0;
 }
 
 /**** IF-MIB initialization functions ****************/
@@ -408,8 +407,20 @@ ptr_t* getNextPhySensorEntryOid(mib_object_t* object, u8t* oid, u8t len)
  */
 void oid_val_init()
 {
-	strcpy(sysname, (u8t*)SNMP_SYSNAME);
-	sysnamelen = strlen(SNMP_SYSNAME);
+#if CONTIKI_TARGET_ZIGD
+	struct snmp_sysname_t sysname_fs;
+
+	if (snmp_fs_read(&sysname_fs, sizeof(struct snmp_sysname_t), SYSNAME_FS_FILENAME) != -1) {
+		strcpy(sysname.sysname, sysname_fs.sysname);
+		sysname.sysnamelen = ((sysname_fs.sysnamelen <= SYSNAME_LEN)? sysname_fs.sysnamelen : SYSNAME_LEN);
+	} else {
+#endif
+	strcpy(sysname.sysname, (u8t*)SNMP_SYSNAME);
+	sysname.sysnamelen = strlen(SNMP_SYSNAME);
+
+#if CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
+	}
+#endif
 }
 
 /*

@@ -68,6 +68,14 @@
 #define ENT_PHYSENSOR_VALUE_TIMESTAMP_VALUE		{1234, 1234, 1234, 1234}
 #define ENT_PHYSENSOR_VALUE_UPDATE_RATE_VALUE	{0, 0, 0, 0};	//in milliseconds
 
+/* system name structure, the snmp object could be read and write */
+#define SYSNAME_LEN		20
+struct snmp_sysname_t {
+	u8t sysname[SYSNAME_LEN];
+	u8t sysnamelen;
+};
+#define SYSNAME_FS_FILENAME "snmp_sysname"
+
 /**
  * Adds all necessary object to the MIB. Should be changed if a new object needs to be added to the MIB.
  * \brief Initializes the MIB objects.

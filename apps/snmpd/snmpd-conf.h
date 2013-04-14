@@ -35,9 +35,9 @@
 
 #define ENABLE_SNMPv3   0
 
-#define ENABLE_PRIVACY  1
+#define ENABLE_PRIVACY  0
 
-#define ENABLE_AUTH     1
+#define ENABLE_AUTH     0
 
 /** \brief maximum length of an SNMP message. */
 #define MAX_BUF_SIZE    484

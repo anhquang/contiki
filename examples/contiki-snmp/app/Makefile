@@ -9,8 +9,11 @@ CONTIKI=../../..
 include $(CONTIKI)/Makefile.include
 
 CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
-#linker optimizations
 SMALL=1
+
+CFLAGS += -ffunction-sections
+
+LDFLAGS += -Wl,--gc-sections,--undefined=_reset_vector__,--undefined=InterruptVectors,--undefined=_copy_data_init__,--undefined=_clear_bss_init__,--undefined=_end_of_init__
 
 #CFLAGS   += -DENABLE_SNMPv1
 #CFLAGS   += -DENABLE_SNMPv3
@@ -21,8 +24,12 @@ econotag:
 sky: 
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
 
-avr-atmega128rfa1:
+zigd: 
+	make TARGET=zigd MIB_INIT=mib-init.c snmp-server
+
+128rfa1:
 	make TARGET=avr-atmega128rfa1 MIB_INIT=mib-init.c $(PROJECT).elf
+	avr-size -C --mcu=atmega128rfa1 $(PROJECT).elf
 
 minimal-net: 
 	make TARGET=minimal-net MIB_INIT=mib-init.c $(PROJECT).minimal-net
@@ -72,6 +79,3 @@ cl-raven:
 
 upload:
 	avrdude -p m1284p -c jtag2 -P usb -v -F -e -U flash:w:"./$(PROJECT).hex"
-
-run:
-	sudo ./snmp-server.minimal-net
