@@ -33,6 +33,10 @@
 #include "mib.h"
 #include "mib-constant.h"
 
+#include "dev/light-sensor.h"
+#include "dev/battery-sensor.h"
+#include "dev/sht11-sensor.h"
+
 #if CONTIKI_TARGET_SKY
 #define SNMP_SYSDESCR "ubisen, sky, Contiki 2.6"
 #elif CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
@@ -40,6 +44,7 @@
 #else
 #define SNMP_SYSDESCR "Undefined HW, Contiki 2.6"
 #endif
+
 #define SNMP_SYSNAME "@ubisen ltd vn"
 #define SNMP_SYSUPTIME	1234
 #define SNMP_IFDESCR	"lwpan"
@@ -82,6 +87,6 @@ struct snmp_sysname_t {
  */
 s8t mib_init();
 
-#define SIMULATION			1
+#define SENSOR_SIMULATION			0
 #endif	/* __MIBINIT_H__ */
 

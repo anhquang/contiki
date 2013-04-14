@@ -326,6 +326,23 @@ ptr_t* getNextPhysicalEntryOid(mib_object_t* object, u8t* oid, u8t len)
 
 
 /* -------- ENTITY-SENSOR_MIB initialization functions --------------*/
+int sensor(u32t oid_el2)
+{
+	int sensor=0;
+	SENSORS_ACTIVATE(light_sensor);
+	SENSORS_ACTIVATE(battery_sensor);
+	SENSORS_ACTIVATE(sht11_sensor);
+	if (oid_el2 == 1) sensor=battery_sensor.value(0);
+	if (oid_el2 == 2) sensor=sht11_sensor.value(SHT11_SENSOR_BATTERY_INDICATOR);
+	if (oid_el2 == 3) sensor=light_sensor.value(LIGHT_SENSOR_PHOTOSYNTHETIC);
+	if (oid_el2 == 4) sensor=light_sensor.value(LIGHT_SENSOR_TOTAL_SOLAR);
+	if (oid_el2 == 5) sensor=sht11_sensor.value(SHT11_SENSOR_TEMP);
+	if (oid_el2 == 6) sensor=sht11_sensor.value(SHT11_SENSOR_HUMIDITY);
+	SENSORS_DEACTIVATE(light_sensor);
+	SENSORS_DEACTIVATE(battery_sensor);
+	SENSORS_DEACTIVATE(sht11_sensor);
+	return sensor;
+}
 s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len)
 {
     u32t oid_el1, oid_el2;
@@ -367,10 +384,10 @@ s8t getEntityPhySensorEntry(mib_object_t* object, u8t* oid, u8t len)
     	//TODO: update sensor value from sensor
     	//here, i set a static value, for debugging purpose only
     	object->varbind.value_type = BER_TYPE_INTEGER;
-#if SIMULATION
+#if SENSOR_SIMULATION
    		object->varbind.value.i_value = random_rand()%10;
 #else
-   		object->varbind.value.i_value = oid_el2;
+   		object->varbind.value.i_value = sensor(oid_el2);
 #endif
     	break;
     case entPhySensorOperStatus:
@@ -418,7 +435,7 @@ void oid_val_init()
 	strcpy(sysname.sysname, (u8t*)SNMP_SYSNAME);
 	sysname.sysnamelen = strlen(SNMP_SYSNAME);
 
-#if CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
+#if CONTIKI_TARGET_ZIGD
 	}
 #endif
 }
@@ -449,11 +466,6 @@ s8t mib_init()
     if (add_table(&oid_if_table, &getIf, &getNextIfOid, 0) == -1) {
     	return -1;
     }
-
-	/*
-	 * ip-mib
-	 * not available now
-	 */
 
 	/*
 	 * ENTITY-MIB
