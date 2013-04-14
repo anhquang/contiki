@@ -24,6 +24,9 @@ econotag:
 sky: 
 	make TARGET=sky MIB_INIT=mib-init.c snmp-server
 
+z1: 
+	make TARGET=z1 MIB_INIT=mib-init.c snmp-server
+
 zigd: 
 	make TARGET=zigd MIB_INIT=mib-init.c snmp-server
 

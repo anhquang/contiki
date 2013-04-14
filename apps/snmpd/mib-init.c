@@ -1,9 +1,9 @@
 /* TODO:
- * 	save some setting to FLASH
+ * 	save some setting to FLASH (do not test yet)
  * 	timesticks
  * 	physical vendor type
  * CHANGE:
- * 	number of sensors
+ * 	number of sensors, sensor() function
  */
 
 #include "mib-init.h"
