@@ -16,7 +16,7 @@
 
 #include "cfs/cfs.h"
 
-#if SIMULATION
+#if SENSOR_SIMULATION
 #include "lib/random.h"
 #endif
 

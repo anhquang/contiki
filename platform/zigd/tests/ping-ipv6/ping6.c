@@ -33,8 +33,12 @@
 
 #include "mac.h"
 
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define u8_t unsigned char
 
 #define MACDEBUG 1
 
@@ -56,9 +60,9 @@
 #define UIP_ICMP_BUF            ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
 
 static struct etimer ping6_periodic_timer;
-static u8_t count = 0;
+static unsigned char count = 0;
 static char command[20];
-static u16_t addr[8];
+static unsigned int addr[8];
 uip_ipaddr_t dest_addr;
 
 PROCESS(ping6_process, "PING6 process");
@@ -89,11 +93,11 @@ ping6handler(process_event_t ev, process_data_t data)
 #endif
     // Setup destination address.
     addr[0] = 0xFDFD;
-    addr[7] = NODE;
-    //addr[4] = 0x0011;
-    //addr[5] = 0x22ff;
-    //addr[6] = 0xfe33;
-    //addr[7] = 0x4401;
+    //addr[7] = NODE;
+    addr[4] = 0x0011;
+    addr[5] = 0x22ff;
+    addr[6] = 0xfe33;
+    addr[7] = 0x4404;
     uip_ip6addr(&dest_addr, addr[0], addr[1],addr[2],
                 addr[3],addr[4],addr[5],addr[6],addr[7]);
 
