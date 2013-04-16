@@ -36,6 +36,7 @@ endif
 
 ifeq ($(PREFIX),)
  PREFIX = aaaa::1/64
+ PREFIX = fdfd::1/64
 endif
 
 include $(CONTIKI)/Makefile.include
@@ -48,3 +49,6 @@ connect-router:	$(CONTIKI)/tools/tunslip6
 
 connect-router-cooja:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 -a 127.0.0.1 $(PREFIX)
+
+connect-zigd: $(CONTIKI)/tools/tunslip6
+	sudo $(CONTIKI)/tools/tunslip6 -B 57600 $(PREFIX)
