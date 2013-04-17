@@ -1,9 +1,10 @@
-PROJECT=snmp-server
+PROJECT=vmote-mote
 
 UIP_CONF_IPV6=1
 WITH_UIP6=1
 
-APPS=snmpd 
+APPS+=snmpd 
+APPS+=collectd
 
 CONTIKI=../../..
 include $(CONTIKI)/Makefile.include
@@ -18,10 +19,10 @@ LDFLAGS += -Wl,--gc-sections,--undefined=_reset_vector__,--undefined=InterruptVe
 #CFLAGS   += -DENABLE_SNMPv3
 
 zigd: 
-	make TARGET=zigd MIB_INIT=mib-init.c snmp-server
+	make TARGET=zigd MIB_INIT=mib-init.c vmote-mote
 
 zigd-upload: 
-	make TARGET=zigd MIB_INIT=mib-init.c snmp-server.zigd.u AVRDUDE_PORT=/dev/ttyUSB1
+	make TARGET=zigd MIB_INIT=mib-init.c vmote-mote.zigd.u AVRDUDE_PORT=/dev/ttyUSB1
 	avr-size -C --mcu=atmega128rfa1 $(PROJECT).zigd
 
 128rfa1:

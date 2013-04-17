@@ -40,6 +40,10 @@ endif
 
 include $(CONTIKI)/Makefile.include
 
+zigd-upload: 
+	make TARGET=zigd border-router.zigd.u
+	avr-size -C --mcu=atmega128rfa1 $(CONTIKI_PROJECT).zigd
+
 $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 	(cd $(CONTIKI)/tools && $(MAKE) tunslip6)
 

@@ -1,0 +1,13 @@
+vr-size -C --mcu=atmega128rfa1 vmote-mote.zigd
+AVR Memory Usage
+----------------
+Device: atmega128rfa1
+
+Program:   61454 bytes (46.9% Full)
+(.text + .data + .bootloader)
+
+Data:      12978 bytes (79.2% Full)
+(.data + .bss + .noinit)
+
+EEPROM:       41 bytes (1.0% Full)
+(.eeprom)
