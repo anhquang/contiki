@@ -11,7 +11,7 @@
 #include "collectd.h"
 #include "colld-dispatcher.h"
 
-#define DEBUG NONE
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
 static struct uip_udp_conn *client_conn;

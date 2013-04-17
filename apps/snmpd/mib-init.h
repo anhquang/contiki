@@ -33,9 +33,14 @@
 #include "mib.h"
 #include "mib-constant.h"
 
+#define ENABLE_SENSORS	0
+#define ENABLE_COFFEE_FS	0
+
+#if ENABLE_SENSORS
 #include "dev/light-sensor.h"
 #include "dev/battery-sensor.h"
 #include "dev/sht11-sensor.h"
+#endif
 
 #if CONTIKI_TARGET_SKY
 #define SNMP_SYSDESCR "ubisen, sky, Contiki 2.6"
@@ -87,6 +92,6 @@ struct snmp_sysname_t {
  */
 s8t mib_init();
 
-#define SENSOR_SIMULATION			0
+#define SENSOR_SIMULATION			1
 #endif	/* __MIBINIT_H__ */
 

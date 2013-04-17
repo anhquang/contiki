@@ -30,6 +30,9 @@ z1:
 zigd: 
 	make TARGET=zigd MIB_INIT=mib-init.c snmp-server
 
+zigd-upload: 
+	make TARGET=zigd MIB_INIT=mib-init.c snmp-server.zigd.u AVRDUDE_PORT=/dev/ttyUSB1
+
 128rfa1:
 	make TARGET=avr-atmega128rfa1 MIB_INIT=mib-init.c $(PROJECT).elf
 	avr-size -C --mcu=atmega128rfa1 $(PROJECT).elf
