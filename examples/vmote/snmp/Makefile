@@ -17,12 +17,12 @@ LDFLAGS += -Wl,--gc-sections,--undefined=_reset_vector__,--undefined=InterruptVe
 #CFLAGS   += -DENABLE_SNMPv1
 #CFLAGS   += -DENABLE_SNMPv3
 
-zigd: 
-	make TARGET=zigd MIB_INIT=mib-init.c snmp-server
+vmote: 
+	make TARGET=vmote MIB_INIT=mib-init.c snmp-server
 
-zigd-upload: 
-	make TARGET=zigd MIB_INIT=mib-init.c snmp-server.zigd.u AVRDUDE_PORT=/dev/ttyUSB1
-	avr-size -C --mcu=atmega128rfa1 $(PROJECT).zigd
+vmote-upload: 
+	make TARGET=vmote MIB_INIT=mib-init.c snmp-server.vmote.u AVRDUDE_PORT=/dev/ttyUSB1
+	avr-size -C --mcu=atmega128rfa1 $(PROJECT).vmote
 
 128rfa1:
 	make TARGET=avr-atmega128rfa1 MIB_INIT=mib-init.c $(PROJECT).elf

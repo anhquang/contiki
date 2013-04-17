@@ -1,6 +1,5 @@
 CONTIKI_PROJECT=border-router
 all: $(CONTIKI_PROJECT) 
-TARGET=sky
 CONTIKI=../../..
 
 WITH_UIP6=1
@@ -40,9 +39,9 @@ endif
 
 include $(CONTIKI)/Makefile.include
 
-zigd-upload: 
-	make TARGET=zigd border-router.zigd.u
-	avr-size -C --mcu=atmega128rfa1 $(CONTIKI_PROJECT).zigd
+vmote-upload: 
+	make TARGET=vmote border-router.vmote.u
+	avr-size -C --mcu=atmega128rfa1 $(CONTIKI_PROJECT).vmote
 
 $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 	(cd $(CONTIKI)/tools && $(MAKE) tunslip6)
@@ -50,7 +49,7 @@ $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 connect-router:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 $(PREFIX)
 
-connect-zigd: $(CONTIKI)/tools/tunslip6
+connect-vmote: $(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 -B 57600 $(PREFIX)
 
 connect-router-cooja:	$(CONTIKI)/tools/tunslip6

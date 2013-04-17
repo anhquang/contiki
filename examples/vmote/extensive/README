@@ -1,4 +1,4 @@
-vr-size -C --mcu=atmega128rfa1 vmote-mote.zigd
+vr-size -C --mcu=atmega128rfa1 vmote-mote.vmote
 AVR Memory Usage
 ----------------
 Device: atmega128rfa1

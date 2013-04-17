@@ -44,7 +44,7 @@
 
 #if CONTIKI_TARGET_SKY
 #define SNMP_SYSDESCR "ubisen, sky, Contiki 2.6"
-#elif CONTIKI_TARGET_VMOTE || CONTIKI_TARGET_ZIGD
+#elif CONTIKI_TARGET_VMOTE
 #define SNMP_SYSDESCR "ubisen, vmote 1.0, Contiki 2.6"
 #else
 #define SNMP_SYSDESCR "Undefined HW, Contiki 2.6"

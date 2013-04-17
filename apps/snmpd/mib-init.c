@@ -86,7 +86,7 @@ static ptr_t oid_entPhySensorEntry PROGMEM         = {ber_oid_entPhySensorEntry,
 
 static struct snmp_sysname_t sysname;
 
-#if CONTIKI_TARGET_ZIGD && ENABLE_COFFEE_FS
+#if CONTIKI_TARGET_VMOTE && ENABLE_COFFEE_FS
 int snmp_fs_write(void *data, u8t len, u8t *filename) {
 	int fd_write;
 	fd_write = cfs_open(filename, CFS_WRITE);
@@ -187,7 +187,7 @@ s8t setSysName(mib_object_t* object, u8t* oid, u8t len, varbind_value_t value)
 		sysname.sysnamelen = value.p_value.len;
 
 		//save to flash, for Vmote only, since sky run out of rom already
-#if CONTIKI_TARGET_ZIGD && ENABLE_COFFEE_FS
+#if CONTIKI_TARGET_VMOTE && ENABLE_COFFEE_FS
 		snmp_fs_write(&sysname, sizeof(struct snmp_sysname_t), SYSNAME_FS_FILENAME);
 #endif
 	}
@@ -427,7 +427,7 @@ ptr_t* getNextPhySensorEntryOid(mib_object_t* object, u8t* oid, u8t len)
  */
 void oid_val_init()
 {
-#if CONTIKI_TARGET_ZIGD && ENABLE_COFFEE_FS
+#if CONTIKI_TARGET_VMOTE && ENABLE_COFFEE_FS
 	struct snmp_sysname_t sysname_fs;
 
 	if (snmp_fs_read(&sysname_fs, sizeof(struct snmp_sysname_t), SYSNAME_FS_FILENAME) != -1) {
@@ -438,7 +438,7 @@ void oid_val_init()
 	strcpy(sysname.sysname, (u8t*)SNMP_SYSNAME);
 	sysname.sysnamelen = strlen(SNMP_SYSNAME);
 
-#if CONTIKI_TARGET_ZIGD && ENABLE_COFFEE_FS
+#if CONTIKI_TARGET_VMOTE && ENABLE_COFFEE_FS
 	}
 #endif
 }
