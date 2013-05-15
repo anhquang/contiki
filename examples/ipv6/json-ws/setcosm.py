@@ -4,9 +4,9 @@
 import httplib,sys
 
 # edit the key and feed parameters to match your COSM account and feed
-key = "<your-key>"
-feed = "<your-feed>"
-cosmaddr = "[2001:470:1f10:333::2]"
+key = "bFcNA8MiN6FrpydHcYgawHiFJEOSAKxTeGhqTGZiU3NLOD0g"
+feed = "1511038476"
+cosmaddr = "[2001:05c0:1504:9f01]"
 
 print "JSON-WS COSM configuration utility\n   Currently set to COSM feed: %s Key: '%s'" % (feed, key)
 if len(sys.argv) > 2:

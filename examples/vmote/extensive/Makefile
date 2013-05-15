@@ -22,7 +22,7 @@ vmote:
 	make TARGET=vmote MIB_INIT=mib-init.c vmote-mote
 
 vmote-upload: 
-	make TARGET=vmote MIB_INIT=mib-init.c vmote-mote.vmote.u AVRDUDE_PORT=/dev/ttyUSB1
+	make TARGET=vmote MIB_INIT=mib-init.c vmote-mote.vmote.u AVRDUDE_PORT=/dev/ttyUSB0
 	avr-size -C --mcu=atmega128rfa1 $(PROJECT).vmote
 
 128rfa1:

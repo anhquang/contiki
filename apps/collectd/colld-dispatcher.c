@@ -18,7 +18,7 @@
 #include "colld-dispatcher.h"
 #include "collect-view.h"
 
-#define DEBUG NONE
+#define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
@@ -125,6 +125,7 @@ void collectd_prepare_data(collectd_object_t* collectpayload) {
       uip_ds6_nbr_t *nbr;
       nbr = uip_ds6_nbr_lookup(&preferred_parent->addr);
       if(nbr != NULL) {
+    	PRINT6ADDR(&nbr->ipaddr);
         /* Use parts of the IPv6 address as the parent address, in reversed byte order. */
         parent.u8[RIMEADDR_SIZE - 1] = nbr->ipaddr.u8[sizeof(uip_ipaddr_t) - 2];
         parent.u8[RIMEADDR_SIZE - 2] = nbr->ipaddr.u8[sizeof(uip_ipaddr_t) - 1];
