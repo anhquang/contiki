@@ -1,0 +1,35 @@
+Only sending "json" doc (hardcode)
+----------------
+With sky
+   text   data    bss    dec    hex    filename
+  42562   204     8574   51340  c88c   testjson.sky
+
+----------------
+Device: atmega128rfa1
+
+Program:   50910 bytes (38.8% Full)
+(.text + .data + .bootloader)
+
+Data:      12763 bytes (77.9% Full)
+(.data + .bss + .noinit)
+
+EEPROM:       41 bytes (1.0% Full)
+(.eeprom)
+
+
+** with jsmn
+-------------------
+sky platform
+   text	   data	    bss	    dec	    hex	filename
+  43722	    204	   8576	  52502	   cd16	testjson.sky
+
+-------------------
+atmega128rfa1 platform
+Program:   52394 bytes (40.0% Full)
+(.text + .data + .bootloader) (+1484)
+
+Data:      12843 bytes (78.4% Full)
+(.data + .bss + .noinit) (+80)
+
+EEPROM:       41 bytes (1.0% Full)
+(.eeprom)
