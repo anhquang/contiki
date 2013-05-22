@@ -61,9 +61,15 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 
 	u8_t i;
 	value[0] = 0;
+	//debug
+	unsigned char accumulate_token;
+	accumulate_token = 0;
 	for (i=0; i<MAX_TOKEN; i++) {
+		accumulate_token += tokens[i].size;
 		token_value_get(input, tokens[i], value, TOKEN_LEN);
 		PRINTF("token[%d] = %s, token.size = %d\n", i, value, tokens[i].size);
+		if (i > accumulate_token)
+			break;
 	}
 
 	//get status

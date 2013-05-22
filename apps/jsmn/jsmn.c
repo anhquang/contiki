@@ -281,8 +281,12 @@ jsmntokenerr_t js_get(char const * const js,
 		char * value, char const max_len_token)
 {
 	unsigned char i;
+	unsigned char accumulate_token=0;
+
 	for (i=0; i<max_token-1; i++) {
 		value[0] = 0;
+		accumulate_token += t[i].size;
+
 		//go through all token with for
 		if (token_value_get(js, t[i], value, max_len_token) != JSMN_TOKEN_SUCCESS)
 			continue;
@@ -291,6 +295,10 @@ jsmntokenerr_t js_get(char const * const js,
 			//the next token is the value of the require key
 			token_value_get(js, t[i+1], value, max_len_token);
 			return JSMN_TOKEN_SUCCESS;
+		}
+		// if token go to the end
+		if (i > accumulate_token) {
+			break;
 		}
 	}
 	//if key not found in js, return NULL string
