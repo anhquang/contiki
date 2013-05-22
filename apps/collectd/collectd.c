@@ -11,7 +11,7 @@
 #include "collectd.h"
 #include "colld-dispatcher.h"
 
-#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 static struct uip_udp_conn *client_conn;
@@ -29,7 +29,7 @@ static void collectd_udp_handler(void) {
 	}
 }
 /*---------------------------------------------------------------------------*/
-void collectd_conf_init(collectd_conf_t *conf){
+static void collectd_conf_init(collectd_conf_t *conf){
 	conf->send_active = SEND_ACTIVE_NO;
 	conf->update_freq_in_sec = DEFAULT_UPDATE_PERIOD;	//this value may update via snmp
 }
@@ -44,8 +44,6 @@ PROCESS_THREAD(collectd_process, ev, data)
 	/* new connection with remote host */
 	client_conn = udp_new(NULL, UIP_HTONS(0), NULL);
 	udp_bind(client_conn, UIP_HTONS(COLLECTD_CLIENT_PORT));
-
-	PRINTF("Created a connection with the server ");
 
 	/* Send a packet every 60-62 seconds. */
 	etimer_set(&period_timer, CLOCK_SECOND * DEFAULT_UPDATE_PERIOD);

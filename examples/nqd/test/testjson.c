@@ -23,7 +23,7 @@
 	(strncmp(js+(t).start, s, (t).end - (t).start) == 0 \
 	 && strlen(s) == (t).end - (t).start)
 #define TOKEN_PRINT(t) \
-	printf("start: %d, end: %d, type: %d, size: %d\n", \
+	PRINTF("start: %d, end: %d, type: %d, size: %d\n", \
 			(t).start, (t).end, (t).type, (t).size)
 
 #define SEND_INTERVAL		15 * CLOCK_SECOND

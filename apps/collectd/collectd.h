@@ -20,8 +20,8 @@
 #else
 #include "dev/uart1.h"
 #endif
-#include "collect-view.h"
 #include "collectd-type.h"
+#include "jsmn.h"
 
 PROCESS_NAME(collectd_process);
 
@@ -43,7 +43,7 @@ PROCESS_NAME(collectd_process);
 #endif
 #define RANDWAIT (DEFAULT_UPDATE_PERIOD)
 
-#define MAX_BUF_SIZE	60		//TODO: verify this number
+#define MAX_BUF_SIZE	200		//TODO: verify this number
 
 #define FAILURE			-1
 #define ERR_NO_ERROR	0
@@ -58,17 +58,4 @@ typedef struct {
 	u16_t 	mnrport;
 	uip_ipaddr_t	mnaddr;
 } collectd_conf_t;
-
-typedef struct {
-	u8_t seqno;
-	struct collect_view_data_msg collect_data;
-} response_data_t;
-
-typedef struct{
-	u8_t version;
-	u8_t id;
-	u8_t type;
-	response_data_t respdata;
-} collectd_object_t;
-
 #endif

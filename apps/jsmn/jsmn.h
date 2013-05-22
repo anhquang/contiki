@@ -26,6 +26,15 @@ typedef enum {
 	JSMN_SUCCESS = 0
 } jsmnerr_t;
 
+typedef enum {
+	/* Everything was fine */
+	JSMN_TOKEN_SUCCESS = 0,
+	/* The provided buffer is not long enough to copy token value */
+	JSMN_TOKEN_ERROR_SHORTMEM = 1,
+	/* The provided token not found */
+	JSMN_TOKEN_ERROR_NOTOKEN = 2
+} jsmntokenerr_t;
+
 /**
  * JSON token description.
  * @param		type	type (object, array, string etc.)
@@ -67,6 +76,11 @@ jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
 /**
  * return value of an index which represented by a token
  */
-void token_value_get(char* js, jsmntok_t t , char* des);
+jsmntokenerr_t token_value_get(char const * const js,
+		jsmntok_t const t , char* val, char const max_len_token);
 
+jsmntokenerr_t js_get(char const * const js,
+		jsmntok_t const * const t, char const max_token,
+		char const * const key,
+		char * value, char const max_len_token);
 #endif /* __JSMN_H_ */

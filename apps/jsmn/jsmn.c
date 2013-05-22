@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "jsmn.h"
 
@@ -256,10 +257,43 @@ void jsmn_init(jsmn_parser *parser) {
 /**
  * return value of an index which presented by a token
  */
-void token_value_get(char* js, jsmntok_t t , char* des) {
-    int i;
-    for (i = 0; i < t.end - t.start; i++) {
-        des[i] = js[i+t.start];
+jsmntokenerr_t token_value_get(char const * const js,
+		jsmntok_t const t , char* val, char const max_len_token)
+{
+    unsigned char i;
+    //if the token is longer than the output (des), we alert error, and make des = NULL
+    if (t.end - t.start > max_len_token) {
+    	val[0] = 0;
+    	return JSMN_TOKEN_ERROR_SHORTMEM;
     }
-    des[i] = 0;
+    for (i = 0; i < t.end - t.start; i++) {
+        val[i] = js[i+t.start];
+    }
+    val[i] = 0;			//end of string
+    return JSMN_TOKEN_SUCCESS;
+}
+
+/**
+ * get value from index of json (dictionary)
+ */
+jsmntokenerr_t js_get(char const * const js,
+		jsmntok_t const * const t, char const max_token, char const * const key,
+		char * value, char const max_len_token)
+{
+	unsigned char i;
+	for (i=0; i<max_token-1; i++) {
+		value[0] = 0;
+		//go through all token with for
+		if (token_value_get(js, t[i], value, max_len_token) != JSMN_TOKEN_SUCCESS)
+			continue;
+		//if the token matches the key
+		if (strcmp(key, value) == 0) {
+			//the next token is the value of the require key
+			token_value_get(js, t[i+1], value, max_len_token);
+			return JSMN_TOKEN_SUCCESS;
+		}
+	}
+	//if key not found in js, return NULL string
+	strcpy(value, "\0");
+	return JSMN_TOKEN_ERROR_NOTOKEN;
 }
