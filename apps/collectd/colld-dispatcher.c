@@ -53,6 +53,8 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 	static jsmn_parser p;
 	static jsmntok_t tokens[MAX_TOKEN];
 	static char value[TOKEN_LEN];
+
+	//values to save temp from input json (before make sure json msg is valid)
 	u8_t commandtype;
 	u16_t update;
 	u16_t srcport;
@@ -67,34 +69,33 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 
 	//get status
 	check(js_get(input, tokens, MAX_TOKEN, "status", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
-	commandtype = (strcmp(value, "start") == 0)?
-			COMMAND_START :
-			((strcmp(value, "stop") == 0)? COMMAND_STOP: COLLECTD_ERROR_CONTENT);
-	PRINTF("start = %d\n", commandtype);
+	check( (strcmp(value, "start")==0) || (strcmp(value, "stop")==0) );
+	commandtype = (strcmp(value, "start") == 0)? COMMAND_START : COMMAND_STOP;
+	//PRINTF("start = %d\n", commandtype);
 
 	check(js_get(input, tokens, MAX_TOKEN, "update", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
 	errno = 0;
 	update = (u16_t)strtol(value, NULL, 10);		//convert to base 10
 	check(!(errno == ERANGE || (errno != 0 && update == 0)));
-	PRINTF("update = %d\n", update);
+	//PRINTF("update = %d\n", update);
 
 	check(js_get(input, tokens, MAX_TOKEN, "addr", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
 	check(uiplib_ipaddrconv(value, &mnaddr) == 1);
-	PRINT6ADDR(&mnaddr);
-	PRINTF("\n");
+	//PRINT6ADDR(&mnaddr);
+	//PRINTF("\n");
 
 	check(js_get(input, tokens, MAX_TOKEN, "port", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
 	errno = 0;
 	srcport = (u16_t)strtol(value, NULL, 10);		//convert to base 10
 	check(!(errno == ERANGE || (errno != 0 && update == 0)));
-	PRINTF("port = %d\n", srcport);
+	//PRINTF("port = %d\n", srcport);
 
 	/*save the request to conf*/
-	/*
-		collectd_conf->send_active = commandtype;
-		collectd_conf->mnrport = srcport;
-		uip_ipaddr_copy(&collectd_conf->mnaddr, &mnaddr);
-	 */
+	collectd_conf->send_active = commandtype;
+	collectd_conf->update_freq_in_sec = update;
+	collectd_conf->mnrport = srcport;
+	uip_ipaddr_copy(&collectd_conf->mnaddr, &mnaddr);
+
 	return COLLECTD_ERROR_NO_ERROR;
 }
 
