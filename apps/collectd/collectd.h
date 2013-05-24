@@ -45,8 +45,10 @@ PROCESS_NAME(collectd_process);
 
 #define MAX_BUF_SIZE	200		//TODO: verify this number
 
-#define FAILURE			-1
-#define ERR_NO_ERROR	0
+
+#define COLLECTD_ERROR_NO_ERROR	0
+#define COLLECTD_ERROR_CONTENT	1
+#define FAILURE			2
 #define ERR_MEMORY_ALLOCATION	1
 
 #define COPY_2B_BIGENDIAN(des, pos, source) des[pos]=(unsigned char)((source)/256); des[pos+1] = (unsigned char)((source)%256)

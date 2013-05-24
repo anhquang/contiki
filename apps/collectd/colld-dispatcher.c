@@ -14,6 +14,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <limits.h>
+
+#include "contiki.h"
+#include "net/uiplib.h"
 #include "collectd.h"
 #include "colld-dispatcher.h"
 #include "jsmn.h"
@@ -49,6 +54,7 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 	static jsmntok_t tokens[MAX_TOKEN];
 	static char value[TOKEN_LEN];
 	u8_t commandtype;
+	u16_t update;
 	u16_t srcport;
 	uip_ipaddr_t mnaddr;
 	int r;
@@ -59,45 +65,37 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 	r = jsmn_parse(&p, input, tokens, MAX_TOKEN);
 	check(r == JSMN_SUCCESS);
 
-	u8_t i;
-	value[0] = 0;
-	//debug
-	unsigned char accumulate_token;
-	accumulate_token = 0;
-	for (i=0; i<MAX_TOKEN; i++) {
-		accumulate_token += tokens[i].size;
-		token_value_get(input, tokens[i], value, TOKEN_LEN);
-		PRINTF("token[%d] = %s, token.size = %d\n", i, value, tokens[i].size);
-	}
-
 	//get status
 	check(js_get(input, tokens, MAX_TOKEN, "status", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
-	PRINTF("status = %s\n", value);
+	commandtype = (strcmp(value, "start") == 0)?
+			COMMAND_START :
+			((strcmp(value, "stop") == 0)? COMMAND_STOP: COLLECTD_ERROR_CONTENT);
+	PRINTF("start = %d\n", commandtype);
+
 	check(js_get(input, tokens, MAX_TOKEN, "update", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
-	PRINTF("update = %s\n", value);
+	errno = 0;
+	update = (u16_t)strtol(value, NULL, 10);		//convert to base 10
+	check(!(errno == ERANGE || (errno != 0 && update == 0)));
+	PRINTF("update = %d\n", update);
+
 	check(js_get(input, tokens, MAX_TOKEN, "addr", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
-	PRINTF("addr = %s\n", value);
+	check(uiplib_ipaddrconv(value, &mnaddr) == 1);
+	PRINT6ADDR(&mnaddr);
+	PRINTF("\n");
+
 	check(js_get(input, tokens, MAX_TOKEN, "port", value, MAX_TOKEN) == JSMN_TOKEN_SUCCESS);
-	PRINTF("port = %s\n", value);
+	errno = 0;
+	srcport = (u16_t)strtol(value, NULL, 10);		//convert to base 10
+	check(!(errno == ERANGE || (errno != 0 && update == 0)));
+	PRINTF("port = %d\n", srcport);
 
-/*
-	token_value_get(input, tokens[2], value);
-	PRINTF("[2]=%s\n", value);
-	token_value_get(input, tokens[4], value);
-	PRINTF("[4]=%s\n", value);
-	token_value_get(input, tokens[6], value);
-	PRINTF("[6]=%s\n", value);
-	token_value_get(input, tokens[8], value);
-	PRINTF("[8]=%s\n", value);
-*/
-
-		/*save the request to conf*/
+	/*save the request to conf*/
 	/*
 		collectd_conf->send_active = commandtype;
 		collectd_conf->mnrport = srcport;
 		uip_ipaddr_copy(&collectd_conf->mnaddr, &mnaddr);
 	 */
-	return ERR_NO_ERROR;
+	return COLLECTD_ERROR_NO_ERROR;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -151,5 +149,5 @@ char collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* coll
 //	uip_udp_packet_sendto(client_conn, output,
 //			len, &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));
 
-	return ERR_NO_ERROR;
+	return COLLECTD_ERROR_NO_ERROR;
 }
