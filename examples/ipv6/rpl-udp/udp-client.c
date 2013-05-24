@@ -116,7 +116,7 @@ set_global_address(void)
 {
   uip_ipaddr_t ipaddr;
 
-  uip_ip6addr(&ipaddr, 0xfdfd, 0, 0, 0, 0, 0, 0, 0);
+  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0);
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
   uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 
@@ -131,12 +131,12 @@ set_global_address(void)
  * Note the IPCMV6 checksum verification depends on the correct uncompressed addresses.
  */
  
-#if 1
+#if 0
 /* Mode 1 - 64 bits inline */
    uip_ip6addr(&server_ipaddr, 0xfdfd, 0, 0, 0, 0, 0, 0, 1);
-#elif 0
+#elif 1
 /* Mode 2 - 16 bits inline */
-  uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0, 0x00ff, 0xfe00, 1);
+  uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0x11, 0x22ff, 0xfe33, 0x4401);
 #else
 /* Mode 3 - derived from server link-local (MAC) address */
   uip_ip6addr(&server_ipaddr, 0xaaaa, 0, 0, 0, 0x0250, 0xc2ff, 0xfea8, 0xcd1a); //redbee-econotag

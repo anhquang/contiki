@@ -68,8 +68,6 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 		accumulate_token += tokens[i].size;
 		token_value_get(input, tokens[i], value, TOKEN_LEN);
 		PRINTF("token[%d] = %s, token.size = %d\n", i, value, tokens[i].size);
-		if (i > accumulate_token)
-			break;
 	}
 
 	//get status
