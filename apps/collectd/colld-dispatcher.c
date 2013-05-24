@@ -99,22 +99,86 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 	return COLLECTD_ERROR_NO_ERROR;
 }
 
-/*---------------------------------------------------------------------------*/
-void collectd_prepare_data() {
-	//u8_t * seqno = "{'clk':%d,'syn':%d,'cpu':%d,'lpm':%d,'tras':%d,'lst':%d,'parent':%s,'etx':%d,'rt':%d,\
-	//		'nbr':%d,'bea_itv':%d,'sen':%d}";
-
+/*
+ * convert lladdr to string
+ */
+char * _lladdr_print(const uip_lladdr_t *addr)
+{
+	int i;
+	unsigned char len=0;
+	char lladdr_str[20];
+	for(i = 0; i < sizeof(uip_lladdr_t); i++) {
+		if(i > 0) {
+			//PRINTA(":");
+			len += snprintf(&buf[len], sizeof(lladdr_str) - len, ":");
+		}
+		len += snprintf(&buf[len], sizeof(lladdr_str) - len, "%02x", addr->addr[i]);
+		//PRINTA("%02x", addr->addr[i]);
+	}
+	//make end of string character
+	buf[len] = 0;
+	return buf;
+}
+/*
+ * this function produce a string @buf in form of json data
+ * example of buf:
+ *
+ * {'clk':%d,'syn':%d,'cpu':%d,'lpm':%d,'tras':%d,'lst':%d,
+ * 'parent':%s,'etx':%d,'rt':%d,\'nbr':%d,'bea_itv':%d,'sen':%d}
+ *
+ */
+void collectd_prepare_data()
+{
 	uint16_t parent_etx;
 	uint16_t rtmetric;
 	uint16_t num_neighbors;
 	uint16_t beacon_interval;
 	rpl_parent_t *preferred_parent;
 	uip_lladdr_t lladdr_parent;
-	rimeaddr_t parent;
 	rpl_dag_t *dag;
 
-	rimeaddr_copy(&parent, &rimeaddr_null);
-	parent_etx = 0;
+//copied from collect-view.c
+	static unsigned long last_cpu, last_lpm, last_transmit, last_listen;
+	unsigned long cpu, lpm, transmit, listen;
+	u16_t clock, timesynch_time;
+
+	clock = clock_time();
+#if TIMESYNCH_CONF_ENABLED
+	timesynch_time = timesynch_time();
+#else /* TIMESYNCH_CONF_ENABLED */
+	timesynch_time = 0;
+#endif /* TIMESYNCH_CONF_ENABLED */
+
+	/*save to buf */
+	blen = 0;
+	ADD("{'clk':%d,'syn':%d,", clock, timesynch_time);
+
+	energest_flush();
+	cpu = energest_type_time(ENERGEST_TYPE_CPU) - last_cpu;
+	lpm = energest_type_time(ENERGEST_TYPE_LPM) - last_lpm;
+	transmit = energest_type_time(ENERGEST_TYPE_TRANSMIT) - last_transmit;
+	listen = energest_type_time(ENERGEST_TYPE_LISTEN) - last_listen;
+
+	/* Make sure that the values are within 16 bits. If they are larger,
+	 we scale them down to fit into 16 bits. */
+	//TODO: why do i need to scale down to 16 bit?
+	while(cpu >= 65536ul || lpm >= 65536ul ||
+			transmit >= 65536ul || listen >= 65536ul) {
+		cpu /= 2;
+		lpm /= 2;
+		transmit /= 2;
+		listen /= 2;
+	}
+	/* prepare for next calling */
+	last_cpu = energest_type_time(ENERGEST_TYPE_CPU);
+	last_lpm = energest_type_time(ENERGEST_TYPE_LPM);
+	last_transmit = energest_type_time(ENERGEST_TYPE_TRANSMIT);
+	last_listen = energest_type_time(ENERGEST_TYPE_LISTEN);
+
+	/* save to buf */
+	ADD("'cpu':%d,'lpm':%d,'tras':%d,'lst':%d,",
+			(u16_t)cpu, (u16_t)lpm,
+			(u16_t)transmit, (u16_t)listen);
 
 	/* Let's suppose we have only one instance */
 	dag = rpl_get_any_dag();
@@ -133,22 +197,28 @@ void collectd_prepare_data() {
 		beacon_interval = (uint16_t) ((2L << dag->instance->dio_intcurrent) / 1000);
 		num_neighbors = RPL_PARENT_COUNT(dag);
 	} else {
+		parent_etx = 0;
 		rtmetric = 0;
 		beacon_interval = 0;
 		num_neighbors = 0;
 	}
-	blen = 0;
-	ADD("{'rt':%d,'bea_itvn':%d}",
-			rtmetric, beacon_interval);
+	/* save to buf */
+	PRINTF("%s\n", _lladdr_print(&lladdr_parent));
+	ADD("'parent':%s,'etx':%d,'rt':%d,\'nbr':%d,'bea_itv':%d,",
+			_lladdr_print(&lladdr_parent), parent_etx,
+			rtmetric, num_neighbors,
+			beacon_interval);
 
+	//collectd_arch_read_sensors();
+	ADD("}");
 }
 
 char collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* collectd_conf){
 	collectd_prepare_data();
 	PRINTF("%s", buf);
 
-//	uip_udp_packet_sendto(client_conn, output,
-//			len, &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));
+	uip_udp_packet_sendto(client_conn, buf,
+			blen, &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));
 
 	return COLLECTD_ERROR_NO_ERROR;
 }
