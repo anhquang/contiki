@@ -23,4 +23,5 @@
 char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf_t *collectd_conf);
 void collectd_prepare_data(void);
 char collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* collectd_conf);
+u8_t lladdr_print(const uip_lladdr_t *addr, char *lladdr_str, u8_t strlen);
 #endif

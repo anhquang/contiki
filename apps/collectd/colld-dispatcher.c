@@ -64,7 +64,7 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 	input[input_len] = 0;
 	PRINTF("%s\n", input);
 	jsmn_init(&p);
-	r = jsmn_parse(&p, input, tokens, MAX_TOKEN);
+	r = jsmn_parse(&p, (char*)input, tokens, MAX_TOKEN);
 	check(r == JSMN_SUCCESS);
 
 	//get status
@@ -100,26 +100,6 @@ char collectd_processing(u8_t* const input, const u16_t input_len, collectd_conf
 }
 
 /*
- * convert lladdr to string
- */
-char * _lladdr_print(const uip_lladdr_t *addr)
-{
-	int i;
-	unsigned char len=0;
-	char lladdr_str[20];
-	for(i = 0; i < sizeof(uip_lladdr_t); i++) {
-		if(i > 0) {
-			//PRINTA(":");
-			len += snprintf(&buf[len], sizeof(lladdr_str) - len, ":");
-		}
-		len += snprintf(&buf[len], sizeof(lladdr_str) - len, "%02x", addr->addr[i]);
-		//PRINTA("%02x", addr->addr[i]);
-	}
-	//make end of string character
-	buf[len] = 0;
-	return buf;
-}
-/*
  * this function produce a string @buf in form of json data
  * example of buf:
  *
@@ -151,7 +131,7 @@ void collectd_prepare_data()
 
 	/*save to buf */
 	blen = 0;
-	ADD("{'clk':%d,'syn':%d,", clock, timesynch_time);
+	ADD("{'clk':%u,'syn':%u,", clock, timesynch_time);
 
 	energest_flush();
 	cpu = energest_type_time(ENERGEST_TYPE_CPU) - last_cpu;
@@ -176,10 +156,15 @@ void collectd_prepare_data()
 	last_listen = energest_type_time(ENERGEST_TYPE_LISTEN);
 
 	/* save to buf */
-	ADD("'cpu':%d,'lpm':%d,'tras':%d,'lst':%d,",
+	ADD("'cpu':%u,'lpm':%u,'tras':%u,'lst':%u,",
 			(u16_t)cpu, (u16_t)lpm,
 			(u16_t)transmit, (u16_t)listen);
 
+	/* initial value, if there's not any dag */
+	parent_etx = 0;
+	rtmetric = 0;
+	beacon_interval = 0;
+	num_neighbors = 0;
 	/* Let's suppose we have only one instance */
 	dag = rpl_get_any_dag();
 	if(dag != NULL) {
@@ -196,26 +181,47 @@ void collectd_prepare_data()
 		rtmetric = dag->rank;
 		beacon_interval = (uint16_t) ((2L << dag->instance->dio_intcurrent) / 1000);
 		num_neighbors = RPL_PARENT_COUNT(dag);
-	} else {
-		parent_etx = 0;
-		rtmetric = 0;
-		beacon_interval = 0;
-		num_neighbors = 0;
 	}
-	/* save to buf */
-	PRINTF("%s\n", _lladdr_print(&lladdr_parent));
-	ADD("'parent':%s,'etx':%d,'rt':%d,\'nbr':%d,'bea_itv':%d,",
-			_lladdr_print(&lladdr_parent), parent_etx,
-			rtmetric, num_neighbors,
-			beacon_interval);
 
+	char lladdr_parent_str[30];
+	u8_t lladdr_str_len;
+	lladdr_str_len = lladdr_print(&lladdr_parent, lladdr_parent_str, 30);
+
+	//ADD_N(lladdr_str, lladdr_str_len);
+	ADD("'parent':%s,", lladdr_parent_str);
+/*
+	ADD("'etx':%u,'rt':%u,'nbr':%u,'bea_itv':%u,",
+			parent_etx, rtmetric, num_neighbors,
+			beacon_interval);
+*/
 	//collectd_arch_read_sensors();
 	ADD("}");
+	//ADD(0);
+}
+
+/*
+ * convert lladdr to string
+ */
+u8_t lladdr_print(const uip_lladdr_t *addr, char *lladdr_str, u8_t strlen)
+{
+	u8_t i;
+	u8_t len=0;
+	for(i = 0; i < sizeof(uip_lladdr_t); i++) {
+		if(i > 0) {
+			//PRINTA(":");
+			len += snprintf(&lladdr_str[len], strlen - len, ":");
+		}
+		len += snprintf(&lladdr_str[len], strlen - len, "%02x", addr->addr[i]);
+		//PRINTA("%02x", addr->addr[i]);
+	}
+	//make end of string character
+	lladdr_str[len] = 0;
+	return len;
 }
 
 char collectd_common_send(struct uip_udp_conn* client_conn,collectd_conf_t* collectd_conf){
 	collectd_prepare_data();
-	PRINTF("%s", buf);
+	PRINTF("%s\n", buf);
 
 	uip_udp_packet_sendto(client_conn, buf,
 			blen, &collectd_conf->mnaddr, UIP_HTONS(collectd_conf->mnrport));

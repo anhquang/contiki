@@ -276,8 +276,8 @@ jsmntokenerr_t token_value_get(char const * const js,
 /**
  * get value from index of json (dictionary)
  */
-jsmntokenerr_t js_get(char const * const js,
-		jsmntok_t const * const t, char const max_token, char const * const key,
+jsmntokenerr_t js_get(char const * js,
+		jsmntok_t const * t, char const max_token, char const * key,
 		char * value, char const max_len_token)
 {
 	unsigned char i;

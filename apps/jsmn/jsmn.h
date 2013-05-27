@@ -76,11 +76,11 @@ jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
 /**
  * return value of an index which represented by a token
  */
-jsmntokenerr_t token_value_get(char const * const js,
+jsmntokenerr_t token_value_get(char const * js,
 		jsmntok_t const t , char* val, char const max_len_token);
 
-jsmntokenerr_t js_get(char const * const js,
-		jsmntok_t const * const t, char const max_token,
-		char const * const key,
+jsmntokenerr_t js_get(char const * js,
+		jsmntok_t const * t, char const max_token,
+		char const * key,
 		char * value, char const max_len_token);
 #endif /* __JSMN_H_ */
