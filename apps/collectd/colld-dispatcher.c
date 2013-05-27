@@ -189,14 +189,13 @@ void collectd_prepare_data()
 
 	//ADD_N(lladdr_str, lladdr_str_len);
 	ADD("'parent':%s,", lladdr_parent_str);
-/*
+
 	ADD("'etx':%u,'rt':%u,'nbr':%u,'bea_itv':%u,",
 			parent_etx, rtmetric, num_neighbors,
 			beacon_interval);
-*/
+
 	//collectd_arch_read_sensors();
 	ADD("}");
-	//ADD(0);
 }
 
 /*
@@ -208,11 +207,9 @@ u8_t lladdr_print(const uip_lladdr_t *addr, char *lladdr_str, u8_t strlen)
 	u8_t len=0;
 	for(i = 0; i < sizeof(uip_lladdr_t); i++) {
 		if(i > 0) {
-			//PRINTA(":");
 			len += snprintf(&lladdr_str[len], strlen - len, ":");
 		}
 		len += snprintf(&lladdr_str[len], strlen - len, "%02x", addr->addr[i]);
-		//PRINTA("%02x", addr->addr[i]);
 	}
 	//make end of string character
 	lladdr_str[len] = 0;
