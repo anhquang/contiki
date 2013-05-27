@@ -27,6 +27,10 @@
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
+#if CONTIKI_TARGET_SKY
+#include "collectd-sensor-sky.h"
+#endif
+
 #define MAX_TOKEN 	20
 #define TOKEN_LEN	20
 
@@ -187,14 +191,19 @@ void collectd_prepare_data()
 	u8_t lladdr_str_len;
 	lladdr_str_len = lladdr_print(&lladdr_parent, lladdr_parent_str, 30);
 
-	//ADD_N(lladdr_str, lladdr_str_len);
-	ADD("'parent':%s,", lladdr_parent_str);
-
+	ADD("'parent':'%s',", lladdr_parent_str);
 	ADD("'etx':%u,'rt':%u,'nbr':%u,'bea_itv':%u,",
 			parent_etx, rtmetric, num_neighbors,
 			beacon_interval);
 
 	//collectd_arch_read_sensors();
+#if CONTIKI_TARGET_SKY
+	u8_t sensors[MAX_SENSORS_BUF_SIZE];
+	//PRINTF("oh,sky\n");
+	if (collect_view_arch_read_sensors(sensors, MAX_SENSORS_BUF_SIZE) >= 0) {
+		ADD("'%s',", sensors);
+	}
+#endif
 	ADD("}");
 }
 

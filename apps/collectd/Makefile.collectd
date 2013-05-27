@@ -1,4 +1,7 @@
 collectd_src = collectd.c colld-dispatcher.c
+ifeq ($(TARGET), sky)
+collectd_src += collectd-sensor-sky.c
+endif
+
 APPS += jsmn
 include $(CONTIKI)/apps/jsmn/Makefile.jsmn
-
