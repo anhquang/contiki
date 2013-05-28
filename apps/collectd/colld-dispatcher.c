@@ -201,7 +201,7 @@ void collectd_prepare_data()
 	u8_t sensors[MAX_SENSORS_BUF_SIZE];
 	//PRINTF("oh,sky\n");
 	if (collect_view_arch_read_sensors(sensors, MAX_SENSORS_BUF_SIZE) >= 0) {
-		ADD("'%s',", sensors);
+		ADD("'sen':'%s',", sensors);
 	}
 #endif
 	ADD("}");
