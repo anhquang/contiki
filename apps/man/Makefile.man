@@ -1,0 +1,7 @@
+man_src = man.c man-dispatcher.c
+ifeq ($(TARGET), sky)
+man_src += man-sensor-sky.c
+endif
+
+APPS += jsmn
+include $(CONTIKI)/apps/jsmn/Makefile.jsmn

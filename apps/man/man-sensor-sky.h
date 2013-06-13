@@ -1,0 +1,6 @@
+#ifndef COLLECT_SENSOR_SKY_H
+#define COLLECT_SENSOR_SKY_H
+
+#define MAX_SENSORS_BUF_SIZE	40
+
+#endif /* COLLECT_SENSOR_SKY_H */

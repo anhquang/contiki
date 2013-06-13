@@ -1,0 +1,21 @@
+collectd app dùng để thu thập dữ liệu từ mỗi cảm biến. Sử dụng app này đơn
+giản, bằng việc tạo process trong chương trình chính đơng giản như:
+
+#include "collectd.h"
+AUTOSTART_PROCESSES(&collectd_client_process, &collectd_sending_process);
+
+collectd_client_process lắng nghe yêu cầu từ bất cứ host (network management
+host) nào. Khi nhận được yêu cầu (đúng theo protocol), node hiện tại sẽ rút ra
+network management host ip và địa chỉ nó  đang mở để nhận dữ liệu.
+
+Một biến cục bộ báo với collectd_sending_process rằng nó có thể bắt đầu gởi dữ
+liệu về management host. 
+
+Cần phát triển thêm:
+- collectd_client_process và collectd_sending_process có thể gộp lại với nhau.
+- thời gian cập nhật hiện nay được tạo cố định. Tuy nhiên, thông số này nên
+  thay đổi được, từ management host, và được lưu vào ROM. Nó nên được gởi đi từ
+snmp hoặc chính trong yêu cầu (request to send message).
+- chú ý việc lấy dữ liệu về từ cảm biến (viết một layer). Các cảm biến từ mỗi
+  mote là khác nhau, và do đó để tăng tính tổng quát, thông tin về các cảm biến
+sẽ được trao đổi qua SNMP.
