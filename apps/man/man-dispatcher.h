@@ -20,8 +20,9 @@
 #include "contiki-conf.h"
 #include "man.h"
 
-char man_processing(u8_t* const input, const u16_t input_len, man_conf_t *man_conf);
+char man_processing(u8_t* const input, const u16_t input_len, man_conf_t *man_conf, struct uip_udp_conn*);
 void man_prepare_data(void);
 char man_common_send(struct uip_udp_conn* client_conn,man_conf_t* man_conf);
 u8_t lladdr_print(const uip_lladdr_t *addr, char *lladdr_str, u8_t strlen);
+char man_discovery_send(struct uip_udp_conn*);
 #endif

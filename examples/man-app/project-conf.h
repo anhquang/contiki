@@ -30,14 +30,9 @@
 #ifndef __PROJECT_CONF_H__
 #define __PROJECT_CONF_H__
 
-#undef NETSTACK_CONF_RDC
 #define NETSTACK_CONF_RDC     nullrdc_driver
 
 /* needs to be ~4 for fragmentation to work */
-#undef QUEUEBUF_CONF_NUM
 #define QUEUEBUF_CONF_NUM          4
-
-#undef UIP_CONF_BUFFER_SIZE
-#define UIP_CONF_BUFFER_SIZE    300
 
 #endif /* __PROJECT_CONF_H__ */

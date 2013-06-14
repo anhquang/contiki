@@ -8,6 +8,7 @@
   <project EXPORT="discard">[APPS_DIR]/powertracker</project>
   <simulation>
     <title>My simulation</title>
+    <speedlimit>1.0</speedlimit>
     <randomseed>123456</randomseed>
     <motedelay_us>1000000</motedelay_us>
     <radiomedium>
@@ -47,9 +48,9 @@
       se.sics.cooja.mspmote.SkyMoteType
       <identifier>sky2</identifier>
       <description>Sky Mote Type #sky2</description>
-      <source EXPORT="discard">[CONTIKI_DIR]/examples/collect-app/collectd-app.c</source>
+      <source EXPORT="discard">[CONTIKI_DIR]/examples/man-app/collectd-app.c</source>
       <commands EXPORT="discard">make collectd-app.sky TARGET=sky</commands>
-      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/collect-app/collectd-app.sky</firmware>
+      <firmware EXPORT="copy">[CONTIKI_DIR]/examples/man-app/collectd-app.sky</firmware>
       <moteinterface>se.sics.cooja.interfaces.Position</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.RimeAddress</moteinterface>
       <moteinterface>se.sics.cooja.interfaces.IPAddress</moteinterface>
@@ -70,8 +71,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>88.37134676283326</x>
-        <y>78.48382194115891</y>
+        <x>91.04525152936785</x>
+        <y>63.47862794979683</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -84,8 +85,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>57.50132101656802</x>
-        <y>58.99839885586774</y>
+        <x>69.03250046706056</x>
+        <y>60.15111906828526</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -98,8 +99,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>25.551746081453295</x>
-        <y>65.7641911950685</y>
+        <x>11.639009132613175</x>
+        <y>47.30098492187885</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -112,8 +113,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>30.250212983676047</x>
-        <y>41.14422462742128</y>
+        <x>54.18669161108588</x>
+        <y>88.81888789361568</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -126,8 +127,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>61.03188632536045</x>
-        <y>93.06655523053017</y>
+        <x>38.57299609014699</x>
+        <y>45.049347990655846</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -136,11 +137,25 @@
       </interface_config>
       <motetype_identifier>sky2</motetype_identifier>
     </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        se.sics.cooja.interfaces.Position
+        <x>6.99656565510367</x>
+        <y>75.4818878037124</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        se.sics.cooja.mspmote.interfaces.MspMoteID
+        <id>6</id>
+      </interface_config>
+      <motetype_identifier>sky2</motetype_identifier>
+    </mote>
   </simulation>
   <plugin>
     se.sics.cooja.plugins.SimControl
     <width>280</width>
-    <z>2</z>
+    <z>1</z>
     <height>160</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
@@ -152,10 +167,10 @@
       <skin>se.sics.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>se.sics.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>5.320884560913473 0.0 0.0 5.320884560913473 -103.95789122918617 -164.9236695908018</viewport>
+      <viewport>3.906826536882021 0.0 0.0 3.906826536882021 -9.69800473203271 -82.99998819912703</viewport>
     </plugin_config>
     <width>400</width>
-    <z>1</z>
+    <z>3</z>
     <height>400</height>
     <location_x>1</location_x>
     <location_y>1</location_y>
@@ -166,8 +181,8 @@
       <filter />
     </plugin_config>
     <width>966</width>
-    <z>5</z>
-    <height>240</height>
+    <z>0</z>
+    <height>505</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
   </plugin>
@@ -179,6 +194,7 @@
       <mote>2</mote>
       <mote>3</mote>
       <mote>4</mote>
+      <mote>5</mote>
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />
@@ -186,7 +202,7 @@
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
     <width>1366</width>
-    <z>4</z>
+    <z>5</z>
     <height>166</height>
     <location_x>0</location_x>
     <location_y>555</location_y>
@@ -198,7 +214,7 @@
       <decorations>true</decorations>
     </plugin_config>
     <width>686</width>
-    <z>3</z>
+    <z>4</z>
     <height>160</height>
     <location_x>680</location_x>
     <location_y>0</location_y>
@@ -207,10 +223,10 @@
     SerialSocketServer
     <mote_arg>0</mote_arg>
     <width>422</width>
-    <z>0</z>
+    <z>2</z>
     <height>69</height>
-    <location_x>33</location_x>
-    <location_y>468</location_y>
+    <location_x>101</location_x>
+    <location_y>467</location_y>
   </plugin>
 </simconf>
 

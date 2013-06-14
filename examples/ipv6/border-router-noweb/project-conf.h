@@ -36,17 +36,20 @@
 #define UIP_FALLBACK_INTERFACE rpl_interface
 #endif
 
+//#define NETSTACK_CONF_RDC     nullrdc_driver
+
 #ifndef QUEUEBUF_CONF_NUM
 #define QUEUEBUF_CONF_NUM          4
 #endif
 
+/*
 #ifndef UIP_CONF_BUFFER_SIZE
-#define UIP_CONF_BUFFER_SIZE    140
+#define UIP_CONF_BUFFER_SIZE    1000
 #endif
-
+*/
 
 #ifndef UIP_CONF_RECEIVE_WINDOW
-#define UIP_CONF_RECEIVE_WINDOW  60
+#define UIP_CONF_RECEIVE_WINDOW  20
 #endif
 
 #ifndef WEBSERVER_CONF_CFS_CONNS

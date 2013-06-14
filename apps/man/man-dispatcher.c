@@ -37,7 +37,7 @@
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
 /* one reply at a time*/
-static char buf[MAX_BUF_SIZE];
+static char buf[UIP_CONF_BUFFER_SIZE];
 static int blen;
 #define ADD(...) do {                                                   \
     blen += snprintf(&buf[blen], sizeof(buf) - blen, __VA_ARGS__);      \
@@ -53,7 +53,7 @@ static int blen;
 		'port': 20000
 		}
  */
-char man_processing(u8_t* const input, const u16_t input_len, man_conf_t *man_conf) {
+char man_processing(u8_t* const input, const u16_t input_len, man_conf_t *man_conf, struct uip_udp_conn *udp_conn) {
 	static jsmn_parser p;
 	static jsmntok_t tokens[MAX_TOKEN];
 	static char value[TOKEN_LEN_MAX];
@@ -103,6 +103,7 @@ char man_processing(u8_t* const input, const u16_t input_len, man_conf_t *man_co
 	/* request to get node discovery */
 	else if (js_get(input, tokens, MAX_TOKEN, "discovery", value, TOKEN_LEN_MAX) == JSMN_TOKEN_SUCCESS) {
 		check((strcmp(value, "get")==0));
+		man_discovery_send(udp_conn);
 	}
 	else {
 		return __LINE__;
@@ -206,7 +207,7 @@ void man_prepare_data()
 
 	//man_arch_read_sensors();
 #if CONTIKI_TARGET_SKY
-	u8_t sensors[MAX_SENSORS_BUF_SIZE];
+	char sensors[MAX_SENSORS_BUF_SIZE];
 	//PRINTF("oh,sky\n");
 	if (collect_view_arch_read_sensors(sensors, MAX_SENSORS_BUF_SIZE) >= 0) {
 		ADD("'sen':{%s},", sensors);
@@ -241,4 +242,9 @@ char man_common_send(struct uip_udp_conn* client_conn,man_conf_t* man_conf){
 			blen, &man_conf->mnaddr, UIP_HTONS(man_conf->mnrport));
 
 	return COLLECTD_ERROR_NO_ERROR;
+}
+
+char man_discovery_send(struct uip_udp_conn * udp_conn) {
+	uip_udp_packet_sendto(udp_conn, "gotcha", 6, &UDP_IP_BUF->srcipaddr, UDP_IP_BUF->srcport);
+	return 0;
 }
