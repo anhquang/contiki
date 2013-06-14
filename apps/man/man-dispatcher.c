@@ -19,6 +19,8 @@
 
 #include "contiki.h"
 #include "net/uiplib.h"
+#include "net/rime.h"
+
 #include "man.h"
 #include "man-dispatcher.h"
 #include "jsmn.h"
@@ -244,7 +246,32 @@ char man_common_send(struct uip_udp_conn* client_conn,man_conf_t* man_conf){
 	return COLLECTD_ERROR_NO_ERROR;
 }
 
+/*
+ * reply for discovery request
+ * example output:
+ 	{	'sysdescr':'sky,contiki2.6',
+ 	 	'phydescr':'sky,msp430,802.15.4NI',
+ 	 	'ifphyaddr':'00:12:74:03:00:03:03:03',
+ 	 	'sysname':'ubisen'
+	}
+ */
 char man_discovery_send(struct uip_udp_conn * udp_conn) {
-	uip_udp_packet_sendto(udp_conn, "gotcha", 6, &UDP_IP_BUF->srcipaddr, UDP_IP_BUF->srcport);
-	return 0;
+	//convert rimeaddress to string
+	char rimeaddr_str[RIMEADDR_SIZE*2+1];
+	char rimeaddr_len = 0;
+	char i;
+	for (i=0; i< RIMEADDR_SIZE; i++)
+		rimeaddr_len += snprintf(&rimeaddr_str[rimeaddr_len],
+				sizeof(rimeaddr_str) - rimeaddr_len,
+				"%02X", (unsigned char)rimeaddr_node_addr.u8[i]);
+	blen = 0;
+	ADD("{");
+	ADD("'sysdescr':'%s',", "sky,contiki2.6");
+	ADD("'phydescr':'%s',", "sky,msp430,802.15.4NI");
+	ADD("'ifphyaddr':'%s',", rimeaddr_str);
+	ADD("'sysname':'%s',", "ubisen");
+	ADD("}");
+	uip_udp_packet_sendto(udp_conn, buf,
+			blen, &UDP_IP_BUF->srcipaddr, UDP_IP_BUF->srcport);
+	return COLLECTD_ERROR_NO_ERROR;
 }

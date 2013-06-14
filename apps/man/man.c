@@ -23,8 +23,13 @@ PROCESS(man_process, "Management process");
 /*---------------------------------------------------------------------------*/
 static void man_udp_handler(void) {
 	if(uip_newdata()) {
+/*		((char *)uip_appdata)[uip_datalen()] = 0;
+		printf("New uIP data: '%s'\n", uip_appdata);
+		PRINT6ADDR(&man_conf->mnaddr);
+		printf("port = %u\n", man_conf->mnrport);
+*/
 		char rst;
-		rst = man_processing((uint8_t*)uip_appdata, uip_datalen(), &man_conf);
+		rst = man_processing((uint8_t*)uip_appdata, uip_datalen(), &man_conf, client_conn);
 		PRINTF("ManUDP handler return with %d\n", rst);
 	}
 }
@@ -42,6 +47,7 @@ PROCESS_THREAD(man_process, ev, data)
 	man_conf_init(&man_conf);
 
 	/* new connection with remote host */
+	//tcp_listen(UIP_HTONS(COLLECTD_CLIENT_PORT));
 	client_conn = udp_new(NULL, UIP_HTONS(0), NULL);
 	udp_bind(client_conn, UIP_HTONS(COLLECTD_CLIENT_PORT));
 
