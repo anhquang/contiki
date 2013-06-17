@@ -54,6 +54,8 @@
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
+#include "man.h"
+
 uint16_t dag_id[] = {0x1111, 0x1100, 0, 0, 0, 0, 0, 0x0011};
 
 extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
@@ -89,7 +91,7 @@ PROCESS(border_router_process, "Border router process");
 PROCESS(snmp_assistance_process, "SNMP assistance process");
 
 /* No webserver */
-AUTOSTART_PROCESSES(&border_router_process, &snmp_assistance_process);
+AUTOSTART_PROCESSES(&border_router_process, &snmp_assistance_process, &man_process);
 
 /*---------------------------------------------------------------------------*/
 static void

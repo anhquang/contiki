@@ -7,6 +7,7 @@ WITH_UIP6=1
 UIP_CONF_IPV6=1
 CFLAGS+= -DUIP_CONF_IPV6_RPL
 
+APPS+=man
 #linker optimizations
 SMALL=1
 

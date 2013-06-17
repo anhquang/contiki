@@ -36,7 +36,7 @@
 #define UIP_FALLBACK_INTERFACE rpl_interface
 #endif
 
-//#define NETSTACK_CONF_RDC     nullrdc_driver
+#define NETSTACK_CONF_RDC     nullrdc_driver
 
 #ifndef QUEUEBUF_CONF_NUM
 #define QUEUEBUF_CONF_NUM          4
