@@ -226,9 +226,6 @@ u8_t lladdr_print(const uip_lladdr_t *addr, char *lladdr_str, u8_t strlen)
 	u8_t i;
 	u8_t len=0;
 	for(i = 0; i < sizeof(uip_lladdr_t); i++) {
-		if(i > 0) {
-			len += snprintf(&lladdr_str[len], strlen - len, ":");
-		}
 		len += snprintf(&lladdr_str[len], strlen - len, "%02x", addr->addr[i]);
 	}
 	//make end of string character
