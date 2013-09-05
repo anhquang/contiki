@@ -47,7 +47,15 @@
 #ifndef F_CPU
 #define F_CPU          8000000UL
 #endif
-
+#define BV(bitno) _BV(bitno)
+#define _NOP() do{asm("nop");}while(0)
+#define PLATFORM_HAS_LEDS    1
+#define PLATFORM_HAS_RADIO	1
+#define PLATFORM_HAS_BATTERY	1
+#define PLATFORM_HAS_TEMP_SENSOR 1
+#define PLATFORM_HAS_HUMIDITY_SENSOR 1
+#define PLATFORM_HAS_CPU_TEMP_SENSOR 1
+#define PLATFORM_HAS_SHT11 1
 #include <stdint.h>
 
 /* The AVR tick interrupt usually is done with an 8 bit counter around 128 Hz.

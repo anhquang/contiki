@@ -6,10 +6,12 @@ WITH_UIP6=1
 UIP_CONF_IPV6=1
 CFLAGS+= -DUIP_CONF_IPV6_RPL
 
+APPS+=man
 #linker optimizations
 SMALL=1
 
 CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
+CFLAGS += -DUIP_CONF_BUFFER_SIZE=300
 PROJECT_SOURCEFILES += slip-bridge.c
 
 #Simple built-in webserver is the default.
@@ -34,7 +36,7 @@ CFLAGS += -DWEBSERVER=2
 endif
 
 ifeq ($(PREFIX),)
- PREFIX = fdfd::1/64
+ PREFIX = aaaa::1/64
 endif
 
 include $(CONTIKI)/Makefile.include

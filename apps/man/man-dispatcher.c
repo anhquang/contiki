@@ -268,6 +268,9 @@ char man_discovery_send(struct uip_udp_conn * udp_conn) {
 	ADD("'ifphyaddr':'%s',", rimeaddr_str);
 	ADD("'sysname':'%s',", "ubisen");
 	ADD("}");
+	PRINT6ADDR(&UDP_IP_BUF->srcipaddr);
+	PRINTF("\n");
+	PRINTF("port=%d\n",UDP_IP_BUF->srcport);
 	uip_udp_packet_sendto(udp_conn, buf,
 			blen, &UDP_IP_BUF->srcipaddr, UDP_IP_BUF->srcport);
 	return COLLECTD_ERROR_NO_ERROR;

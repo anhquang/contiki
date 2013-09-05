@@ -96,6 +96,12 @@ $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 connect-router:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 aaaa::1/64
 
+connect-router-1:	$(CONTIKI)/tools/tunslip6
+	sudo $(CONTIKI)/tools/tunslip6 -s /dev/ttyUSB1 aaaa::1/64
+
+connect-router-2:	$(CONTIKI)/tools/tunslip6
+	sudo $(CONTIKI)/tools/tunslip6 -s /dev/ttyUSB2 aaaa::1/64
+
 connect-router-cooja:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 -a 127.0.0.1 aaaa::1/64
 

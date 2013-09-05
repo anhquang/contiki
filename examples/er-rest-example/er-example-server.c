@@ -44,7 +44,7 @@
 
 
 /* Define which resources to include to meet memory constraints. */
-#define REST_RES_HELLO 0
+#define REST_RES_HELLO 1
 #define REST_RES_MIRROR 0 /* causes largest code size */
 #define REST_RES_CHUNKS 0
 #define REST_RES_SEPARATE 1
@@ -54,7 +54,7 @@
 #define REST_RES_LEDS 0
 #define REST_RES_TOGGLE 1
 #define REST_RES_LIGHT 0
-#define REST_RES_BATTERY 0
+#define REST_RES_BATTERY 1
 #define REST_RES_RADIO 0
 
 
@@ -644,7 +644,7 @@ RESOURCE(toggle, METHOD_POST, "actuators/toggle", "title=\"Red LED\";rt=\"Contro
 void
 toggle_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-  leds_toggle(LEDS_RED);
+  leds_toggle(LEDS_GREEN);
 }
 #endif
 #endif /* PLATFORM_HAS_LEDS */

@@ -51,8 +51,10 @@
 #include <string.h>
 #include <ctype.h>
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
+
+#include "man.h"
 
 uint16_t dag_id[] = {0x1111, 0x1100, 0, 0, 0, 0, 0, 0x0011};
 
@@ -89,7 +91,7 @@ PROCESS(border_router_process, "Border router process");
 PROCESS(snmp_assistance_process, "SNMP assistance process");
 
 /* No webserver */
-AUTOSTART_PROCESSES(&border_router_process, &snmp_assistance_process);
+AUTOSTART_PROCESSES(&border_router_process, &snmp_assistance_process, &man_process);
 
 /*---------------------------------------------------------------------------*/
 static void
@@ -203,7 +205,7 @@ PROCESS_THREAD(snmp_assistance_process, ev, data) {
 	while(1) {
 		PROCESS_YIELD();
 		if(ev == tcpip_event) {
-			PRINTF("goto udp server of snmp_assistance_process\n");
+			//PRINTF("goto udp server of snmp_assistance_process\n");
 			snmp_ass_handler();
 		}
 	}
@@ -225,9 +227,9 @@ void snmp_ass_handler(void) {
 
 	blen = 0;
 	yield_routing_info();
-	PRINTF("Responding with message: ");
-	PRINTF("%s\n", buf);
-	PRINTF("Len = %u and %u", blen, strlen(buf));
+	//PRINTF("Responding with message: ");
+	//PRINTF("%s\n", buf);
+	//PRINTF("Len = %u and %u", blen, strlen(buf));
 
     /*create new udp connection, with destination {ipaddress, port} set to the connector */
 	/*
