@@ -12,7 +12,6 @@ SMALL=1
 
 CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 PROJECT_SOURCEFILES += slip-bridge.c
-
 #Simple built-in webserver is the default.
 #Override with make WITH_WEBSERVER=0 for no webserver.
 #WITH_WEBSERVER=webserver-name will use /apps/webserver-name if it can be
@@ -38,17 +37,16 @@ ifeq ($(PREFIX),)
  PREFIX = aaaa::1/64
 # PREFIX = fdfd::1/64
 endif
-
 include $(CONTIKI)/Makefile.include
 
 $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 	(cd $(CONTIKI)/tools && $(MAKE) tunslip6)
 
 connect-router:	$(CONTIKI)/tools/tunslip6
-	sudo $(CONTIKI)/tools/tunslip6 $(PREFIX)
+	sudo $(CONTIKI)/tools/tunslip6 aaaa::1/64
 
 connect-router-cooja:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 -a 127.0.0.1 $(PREFIX)
 
-connect-zigd: $(CONTIKI)/tools/tunslip6
-	sudo $(CONTIKI)/tools/tunslip6 -B 57600 $(PREFIX)
+connect-vmote: $(CONTIKI)/tools/tunslip6
+	sudo $(CONTIKI)/tools/tunslip6 -B 57600 $(PREFIX) -s $(AVRDUDE_PORT)

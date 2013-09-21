@@ -421,7 +421,6 @@ int
 main(void)
 {
   initialize();
-
   while(1) {
     process_run();
     watchdog_periodic();
@@ -439,7 +438,6 @@ main(void)
 #endif
       }
     }
-
 #if 0
 /* Various entry points for debugging in the AVR Studio simulator.
  * Set as next statement and step into the routine.
@@ -481,6 +479,7 @@ main(void)
     if (rtimerflag) {
       rtimer_set(&rt, RTIMER_NOW()+ RTIMER_ARCH_SECOND*1UL, 1,(void *) rtimercycle, NULL);
       rtimerflag=0;
+
 #else
   if (clocktime!=clock_seconds()) {
      clocktime=clock_seconds();
@@ -511,8 +510,8 @@ if ((clocktime%PINGS)==1) {
   raven_ping6();
 }
 #endif
-
 #if ROUTES && UIP_CONF_IPV6
+
 if ((clocktime%ROUTES)==2) {
       
 extern uip_ds6_nbr_t uip_ds6_nbr_cache[];

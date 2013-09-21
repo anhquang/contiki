@@ -52,12 +52,11 @@
 #define PLATFORM_HAS_LEDS    1
 #define PLATFORM_HAS_RADIO	1
 #define PLATFORM_HAS_BATTERY	1
-#define PLATFORM_HAS_TEMP_SENSOR 1
-#define PLATFORM_HAS_HUMIDITY_SENSOR 1
+#define PLATFORM_HAS_TEMP_SENSOR 0
+#define PLATFORM_HAS_HUMIDITY_SENSOR 0
 #define PLATFORM_HAS_CPU_TEMP_SENSOR 1
 #define PLATFORM_HAS_SHT11 1
 #include <stdint.h>
-
 /* The AVR tick interrupt usually is done with an 8 bit counter around 128 Hz.
  * 125 Hz needs slightly more overhead during the interrupt, as does a 32 bit
  * clock_time_t.
@@ -154,7 +153,9 @@ typedef unsigned short uip_stats_t;
 #define RIMEADDR_CONF_SIZE        8
 #define UIP_CONF_ICMP6            1
 #define UIP_CONF_UDP              1
+#ifndef UIP_CONF_TCP
 #define UIP_CONF_TCP              1
+#endif
 #define NETSTACK_CONF_NETWORK     sicslowpan_driver
 #define SICSLOWPAN_CONF_COMPRESSION SICSLOWPAN_COMPRESSION_HC06
 #else
@@ -190,11 +191,12 @@ typedef unsigned short uip_stats_t;
 #define UIP_CONF_DHCP_LIGHT      1
 
 
-#if 1 /* No radio cycling */
+#if (RDC_PARAM==0) /* No radio cycling */
 
 //#define NETSTACK_CONF_MAC         nullmac_driver
-#define NETSTACK_CONF_MAC		csma_driver
-#define NETSTACK_CONF_RDC         sicslowmac_driver
+//#define NETSTACK_CONF_RDC         sicslowmac_driver
+#define NETSTACK_CONF_MAC	csma_driver
+#define NETSTACK_CONF_RDC	nullrdc_driver
 #define NETSTACK_CONF_FRAMER      framer_802154
 #define NETSTACK_CONF_RADIO       rf230_driver
 #define CHANNEL_802_15_4          26
@@ -239,7 +241,7 @@ typedef unsigned short uip_stats_t;
 #define UIP_CONF_DS6_AADDR_NBU    0
 
 
-#elif 1  /* Contiki-mac radio cycling */
+#elif (RDC_PARAM==1)   /* Contiki-mac radio cycling */
 //#define NETSTACK_CONF_MAC         nullmac_driver
 /* csma needed for burst mode at present. Webserver won't work without it */
 #define NETSTACK_CONF_MAC         csma_driver
@@ -262,13 +264,13 @@ typedef unsigned short uip_stats_t;
 #define RF230_CONF_AUTOACK        1
 /* A 0 here means non-extended mode; 1 means extended mode with no retry, >1 for retrys */
 /* Contikimac strobes on its own, but hardware retries are faster */
-#define RF230_CONF_FRAME_RETRIES  1
+#define RF230_CONF_FRAME_RETRIES  1   //change origin 1
 /* Long csma backoffs will compromise radio cycling; set to 0 for 1 csma */
-#define RF230_CONF_CSMA_RETRIES   0
+#define RF230_CONF_CSMA_RETRIES   0  //change origin 0
 #define SICSLOWPAN_CONF_FRAG      1
-#define SICSLOWPAN_CONF_MAXAGE    3
+#define SICSLOWPAN_CONF_MAXAGE    3   //change origin 8
 /* 211 bytes per queue buffer. Contikimac burst mode needs 15 for a 1280 byte MTU */
-#define QUEUEBUF_CONF_NUM         15
+#define QUEUEBUF_CONF_NUM         15 
 /* 54 bytes per queue ref buffer */
 #define QUEUEBUF_CONF_REF_NUM     2
 /* Allocate remaining RAM. Not much left due to queuebuf increase  */
@@ -284,7 +286,7 @@ typedef unsigned short uip_stats_t;
 #define UIP_CONF_DS6_AADDR_NBU    0
 
 
-#elif 1  /* cx-mac radio cycling */
+#elif (RDC_PARAM==2) /* cx-mac radio cycling */
 /* RF230 does clear-channel assessment in extended mode (autoretries>0) */
 /* These values are guesses */
 #define RF230_CONF_FRAME_RETRIES  10

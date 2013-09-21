@@ -2,7 +2,7 @@ CONTIKI_TARGET_DIRS = . dev apps net loader
 
 CONTIKI_CORE=contiki-main
 CONTIKI_TARGET_MAIN = ${CONTIKI_CORE}.o
-CONTIKI_TARGET_SOURCEFILES += contiki-main.c params.c leds-arch.c adc.c button-sensor.c sensors.c temperature-sensor.c battery-sensor.c sht11-sensor.c sht11.c
+CONTIKI_TARGET_SOURCEFILES += contiki-main.c params.c leds-arch.c adc.c button-sensor.c sensors.c temperature-sensor.c battery-sensor.c sht11-sensor-vmote.c sensirion_protocol.c
 #Needed for slip
 CONTIKI_TARGET_SOURCEFILES += slip_uart0.c slip.c
 
@@ -12,12 +12,19 @@ CONTIKIBOARD=.
 CONTIKI_PLAT_DEFS = -DF_CPU=16000000UL -DAUTO_CRC_PADDING=2
 
 MCU=atmega128rfa1
+RDC ?= contikimac
+ifeq ($(RDC),null)
+CFLAGS += -DRDC_PARAM=0
+else ifeq ($(RDC),contikimac)
+CFLAGS += -DRDC_PARAM=1
+else ifeq ($(RDC),cxmac)
+CFLAGS += -DRDC_PARAM=2
+endif
 
 AVRDUDE_PROGRAMMER=arduino
 AVRDUDE_PORT ?= /dev/ttyUSB0
 AVRDUDE_OPTIONS=-V -F -D -b 57600
 //AVRDUDE_OPTIONS=-V -F -D -b 115200
-
 SERIAL_DUMP = $(CONTIKI)/tools/sky/serialdump-linux
 
 login:

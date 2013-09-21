@@ -62,7 +62,7 @@ APPS += er-coap-07
 else ifeq ($(WITH_COAP), 3)
 ${info INFO: compiling with CoAP-03}
 CFLAGS += -DWITH_COAP=3
-CFLAGS += -DREST=coap_rest_implementation
+CFLAGSc += -DREST=coap_rest_implementation
 CFLAGS += -DUIP_CONF_TCP=0
 APPS += er-coap-03
 else
@@ -90,20 +90,18 @@ include $(CONTIKI)/Makefile.include
 #	$(CC) $(CFLAGS) -MMD -S $< -o $@
 
 # border router rules
+
 $(CONTIKI)/tools/tunslip6:	$(CONTIKI)/tools/tunslip6.c
 	(cd $(CONTIKI)/tools && $(MAKE) tunslip6)
 
 connect-router:	$(CONTIKI)/tools/tunslip6
-	sudo $(CONTIKI)/tools/tunslip6 aaaa::1/64
-
-connect-router-1:	$(CONTIKI)/tools/tunslip6
-	sudo $(CONTIKI)/tools/tunslip6 -s /dev/ttyUSB1 aaaa::1/64
-
-connect-router-2:	$(CONTIKI)/tools/tunslip6
-	sudo $(CONTIKI)/tools/tunslip6 -s /dev/ttyUSB2 aaaa::1/64
+	sudo $(CONTIKI)/tools/tunslip6 aaaa::1/64 -s $(MOTES)
 
 connect-router-cooja:	$(CONTIKI)/tools/tunslip6
 	sudo $(CONTIKI)/tools/tunslip6 -a 127.0.0.1 aaaa::1/64
 
 connect-minimal:
 	sudo ip address add fdfd::1/64 dev tap0
+connect-vmote: $(CONTIKI)/tools/tunslip6
+	sudo $(CONTIKI)/tools/tunslip6 -s $(AVRDUDE_PORT) aaaa::1/64 -B 57600
+       

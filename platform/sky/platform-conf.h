@@ -51,7 +51,7 @@
 #define PLATFORM_HAS_LIGHT   1
 #define PLATFORM_HAS_BATTERY 1
 #define PLATFORM_HAS_SHT11   1
-
+#define PLATFORM_HAS_CPU_TEMP_SENSOR 1
 /* CPU target speed in Hz */
 #define F_CPU 3900000uL /*2457600uL*/
 

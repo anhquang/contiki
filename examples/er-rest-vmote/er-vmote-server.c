@@ -40,7 +40,6 @@
 #include "contiki.h"
 #include "contiki-net.h"
 
-
 /* Define which resources to include to meet memory constraints. */
 #define REST_RES_HELLO 1
 #define REST_RES_MIRROR 0 /* causes largest code size */
@@ -48,16 +47,16 @@
 #define REST_RES_SEPARATE 1
 #define REST_RES_PUSHING 1
 #define REST_RES_EVENT 1
-#define REST_RES_SUB 1
+#define REST_RES_SUB 0
 #define REST_RES_LEDS 1
 #define REST_RES_TOGGLE 1
 #define REST_RES_LIGHT 0
 #define REST_RES_BATTERY 1
 #define REST_RES_RADIO 0
-#define REST_RES_TEMP 1
-#define REST_RES_HUMIDITY 1
 #define REST_RES_CPU_TEMP 1
 #define REST_RES_SHT11_TEMP 1
+#define REST_RES_SHT11_HUMI 1
+
 
 #if !UIP_CONF_IPV6_RPL && !defined (CONTIKI_TARGET_MINIMAL_NET) && !defined (CONTIKI_TARGET_NATIVE)
 #warning "Compiling with static routing!"
@@ -80,20 +79,10 @@
 #include "dev/battery-sensor.h"
 #endif
 #if defined (PLATFORM_HAS_SHT11)
-#include "dev/sht11-sensor.h"
+#include "dev/sht11-sensor-vmote.h"
 #endif
 #if defined (PLATFORM_HAS_RADIO)
 #include "dev/radio-sensor.h"
-#endif
-
-#if defined (PLATFORM_HAS_HUMIDITY_SENSOR)
-/*#include "dev/humidity-sensor.h"*/
-#include "dev/battery-sensor.h"
-#endif
-
-#if defined (PLATFORM_HAS_TEMP_SENSOR)
-/*#include "dev/temp-sensor.h"*/
-#include "dev/battery-sensor.h"
 #endif
 
 #if defined (PLATFORM_HAS_CPU_TEMP_SENSOR)
@@ -112,7 +101,7 @@
 #else
 #warning "Erbium example without CoAP-specifc functionality"
 #endif /* CoAP-specific example */
-
+double battery_indicator();
 #define DEBUG 1
 #if DEBUG
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -541,119 +530,6 @@ pushing_periodic_handler(resource_t *r)
 }
 #endif
 /******************************************************************************/
-
-#if REST_RES_TEMP && defined (PLATFORM_HAS_TEMP_SENSOR)
-/*
- * Example for a periodic temperature.
- * It takes an additional period parameter, which defines the interval to call [name]_periodic_handler().
- * A default post_handler takes care of subscriptions by managing a list of subscribers to notify.
- */
-
-PERIODIC_RESOURCE(temp, METHOD_GET | METHOD_POST, "s/temperature", "title=\"Periodic temperature, POST period=0..\";obs", 5*CLOCK_SECOND);
-
-void
-temp_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
-{
-
-
-  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
-
-  /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
- // const char *msg = "periodic temp";
-
-
-  const char *period = NULL;
- uint32_t period_val;
-struct etimer *petimer;
-struct timer *ptimer;
-uint8_t method=REST.get_method_type(request);
-if (method==METHOD_POST)
-{
- REST.get_post_variable(request, "period", &period);
- period_val=atoi(period);
- periodic_resource_temp.period=(uint32_t) (period_val*CLOCK_SECOND);
-petimer=&(periodic_resource_temp.periodic_timer);
-ptimer=&(petimer->timer);
-ptimer->interval=periodic_resource_temp.period;
-//itoa(periodic_val,period_test,10);
-//  REST.set_response_payload(response, period_test, strlen(period_test));
-PRINTF("TEST ptimer %u \n",ptimer->interval);
- 
-PRINTF("TEST period %u \n",periodic_resource_temp.period);
-  /* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
-}
-else
-{
-
-  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
-
-  /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
-  const char *msg = "periodic temp";
-  REST.set_response_payload(response, msg, strlen(msg));
-}
-}
-/*
- * Additionally, a handler function named [resource name]_handler must be implemented for each PERIODIC_RESOURCE.
- * It will be called by the REST manager process with the defined period.
- */
-void
-temp_periodic_handler(resource_t *r)
-{
-  static char content[20];
-  int battery = battery_sensor.value(0);
-  PRINTF("TEMP %d for /%s\n", battery, r->url);
-
-  /* Build notification. */
-  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
-  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
-  coap_set_payload(notification, content, snprintf(content, sizeof(content), "TEMP %d", battery));
-
-  /* Notify the registered observers with the given message type, observe option, and payload. */
-  REST.notify_subscribers(r, battery, notification);
-}
-#endif
-/******************************************************************************/
-
-#if REST_RES_HUMIDITY && defined (PLATFORM_HAS_HUMIDITY_SENSOR)
-/*
- * Example for a periodic temperature.
- * It takes an additional period parameter, which defines the interval to call [name]_periodic_handler().
- * A default post_handler takes care of subscriptions by managing a list of subscribers to notify.
- */
-PERIODIC_RESOURCE(humidity, METHOD_GET, "s/humidity", "title=\"Periodic humidity\";obs", 5*CLOCK_SECOND);
-
-void
-humidity_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
-{
-  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
-
-  /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
-  const char *msg = "periodic humidity";
-  REST.set_response_payload(response, msg, strlen(msg));
-
-  /* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
-}
-
-/*
- * Additionally, a handler function named [resource name]_handler must be implemented for each PERIODIC_RESOURCE.
- * It will be called by the REST manager process with the defined period.
- */
-void
-humidity_periodic_handler(resource_t *r)
-{
-  static char content[20];
-  int battery = battery_sensor.value(0);
-  PRINTF("HUMIDITY %d for /%s\n", battery, r->url);
-
-  /* Build notification. */
-  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
-  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
-  coap_set_payload(notification, content, snprintf(content, sizeof(content), "HUMIDITY %d", battery));
-
-  /* Notify the registered observers with the given message type, observe option, and payload. */
-  REST.notify_subscribers(r, battery, notification);
-}
-#endif
 /*****************************************************************************************/
 #if REST_RES_CPU_TEMP && defined (PLATFORM_HAS_CPU_TEMP_SENSOR)
 /*
@@ -661,41 +537,82 @@ humidity_periodic_handler(resource_t *r)
  * It takes an additional period parameter, which defines the interval to call [name]_periodic_handler().
  * A default post_handler takes care of subscriptions by managing a list of subscribers to notify.
  */
-PERIODIC_RESOURCE(cputemp, METHOD_GET, "s/cputemp", "title=\"Periodic cpu temp\";obs", 5*CLOCK_SECOND);
+RESOURCE(cputemp, METHOD_GET | METHOD_POST, "s/cputemp", "title=\"Periodic cpu temp\"");
 
 void
 cputemp_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
   REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
 
-  /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
-  const char *msg = "It's periodic!";
-  REST.set_response_payload(response, msg, strlen(msg));
-
-  /* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
-}
+//  const char *period = NULL;
+// uint32_t period_val;
+//struct etimer *petimer;
+//struct timer *ptimer;
+uint8_t method=REST.get_method_type(request);
+if (method==METHOD_POST)
+{
+// REST.get_post_variable(request, "period", &period);
+// period_val=atoi(period);
+// periodic_resource_cputemp.period=(uint32_t) (period_val*CLOCK_SECOND);
+//petimer=&(periodic_resource_cputemp.periodic_timer);
+//ptimer=&(petimer->timer);
+//ptimer->interval=periodic_resource_cputemp.period;
+//itoa(periodic_val,period_test,10);
+//  REST.set_response_payload(response, period_test, strlen(period_test));
+/* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
 
 /*
  * Additionally, a handler function named [resource name]_handler must be implemented for each PERIODIC_RESOURCE.
  * It will be called by the REST manager process with the defined period.
  */
-void
-cputemp_periodic_handler(resource_t *r)
+}
+else
 {
-   static char content[20];
-   int cputemp_val=temperature_sensor.value(0);
+ 
+int cputemp_val=temperature_sensor.value(0);
+
+  const uint16_t *accept = NULL;
+  int num = REST.get_header_accept(request, &accept);
+ 
+  if ((num==0) || (num && accept[0]==REST.type.TEXT_PLAIN))
+  {
+    REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", cputemp_val);
+
+    REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
+  }
+  else if (num && (accept[0]==REST.type.APPLICATION_JSON))
+  {
+    REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'cputemp':%d}", cputemp_val);
+
+    REST.set_response_payload(response, buffer, strlen((char *)buffer));
+  }
+  else
+  {
+    REST.set_response_status(response, REST.status.NOT_ACCEPTABLE);
+    const char *msg = "Supporting content-types text/plain and application/json";
+    REST.set_response_payload(response, msg, strlen(msg));
+  }
+}
+}
+//void
+//cputemp_periodic_handler(resource_t *r)
+//{
+//   static char content[20];
+//   int cputemp_val=temperature_sensor.value(0);
   
 
-  PRINTF("CPU TEMP %d for /%s\n", cputemp_val, r->url);
+//  PRINTF("CPU TEMP %d for /%s\n", cputemp_val, r->url);
 
   /* Build notification. */
-  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
-  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
-  coap_set_payload(notification, content, snprintf(content, sizeof(content), "TEMP %d", cputemp_val));
+//  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
+//  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
+//  coap_set_payload(notification, content, snprintf(content, sizeof(content), "TEMP %d", cputemp_val));
 
   /* Notify the registered observers with the given message type, observe option, and payload. */
-  REST.notify_subscribers(r, cputemp_val, notification);
-}
+//  REST.notify_subscribers(r, cputemp_val, notification);
+//}
 #endif
 /*******************************************************************/
 /******************************************************************************/
@@ -705,7 +622,7 @@ cputemp_periodic_handler(resource_t *r)
  * It takes an additional period parameter, which defines the interval to call [name]_periodic_handler().
  * A default post_handler takes care of subscriptions by managing a list of subscribers to notify.
  */
-PERIODIC_RESOURCE(sht11temp, METHOD_GET, "s/sht11temp", "title=\"Periodic sht11 temp\";obs", 5*CLOCK_SECOND);
+RESOURCE(sht11temp, METHOD_GET, "s/temperature", "title=\"Periodic sht11 temp\"");
 
 void
 sht11temp_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
@@ -713,8 +630,35 @@ sht11temp_handler(void* request, void* response, uint8_t *buffer, uint16_t prefe
   REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
 
   /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
-  const char *msg = "It's periodic!";
-  REST.set_response_payload(response, msg, strlen(msg));
+ // const char *msg = "It's periodic!";
+
+  //double battery_ind=battery_indicator();
+int sht11temp_val=sht11_sensor.value(SHT11_SENSOR_TEMP);
+
+  const uint16_t *accept = NULL;
+  int num = REST.get_header_accept(request, &accept);
+ 
+  if ((num==0) || (num && accept[0]==REST.type.TEXT_PLAIN))
+  {
+    REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", sht11temp_val);
+
+    REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
+  }
+  else if (num && (accept[0]==REST.type.APPLICATION_JSON))
+  {
+    REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'sht11temp':%d}", sht11temp_val);
+
+    REST.set_response_payload(response, buffer, strlen((char *)buffer));
+  }
+  else
+  {
+    REST.set_response_status(response, REST.status.NOT_ACCEPTABLE);
+    const char *msg = "Supporting content-types text/plain and application/json";
+    REST.set_response_payload(response, msg, strlen(msg));
+  }
+
 
   /* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
 }
@@ -723,33 +667,105 @@ sht11temp_handler(void* request, void* response, uint8_t *buffer, uint16_t prefe
  * Additionally, a handler function named [resource name]_handler must be implemented for each PERIODIC_RESOURCE.
  * It will be called by the REST manager process with the defined period.
  */
-void
-sht11temp_periodic_handler(resource_t *r)
-{
-   static char content[20];
-   int sht11temp_val=sht11_sensor.value(SHT11_SENSOR_TEMP);
-  
+//void
+//sht11temp_periodic_handler(resource_t *r)
+//{
+//   static char content[20];
+//   static int sht11temp_val;
+//   sht11temp_val=sht11_sensor.value(SHT11_SENSOR_TEMP); 
 
-  PRINTF("SHT11 SENSOR TEMP %d for /%s\n", sht11temp_val, r->url);
+//  PRINTF("SHT11 SENSOR TEMP %d for /%s\n", sht11temp_val, r->url);
 
   /* Build notification. */
-  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
-  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
-  coap_set_payload(notification, content, snprintf(content, sizeof(content), "SHT11 TEMP %d", sht11temp_val));
+//  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
+//  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
+//  coap_set_payload(notification, content, snprintf(content, sizeof(content), "SHT11 TEMP %d", sht11temp_val));
 
   /* Notify the registered observers with the given message type, observe option, and payload. */
-  REST.notify_subscribers(r, sht11temp_val, notification);
-}
+//  REST.notify_subscribers(r, sht11temp_val, notification);
+//}
 #endif
 /***********************************
 */
+
+#if REST_RES_SHT11_HUMI && defined (PLATFORM_HAS_SHT11)
+/*
+ * Example for a periodic resource.
+ * It takes an additional period parameter, which defines the interval to call [name]_periodic_handler().
+ * A default post_handler takes care of subscriptions by managing a list of subscribers to notify.
+ */
+RESOURCE(sht11humi, METHOD_GET, "s/humidity", "title=\"Periodic sht11 humidity\"");
+
+void
+sht11humi_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+{
+  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+
+  /* Usually, a CoAP server would response with the resource representation matching the periodic_handler. */
+//  const char *msg = "It's periodic!";
+//  REST.set_response_payload(response, msg, strlen(msg));
+
+
+  //double battery_ind=battery_indicator();
+int sht11humi_val=sht11_sensor.value(SHT11_SENSOR_HUMIDITY);
+
+  const uint16_t *accept = NULL;
+  int num = REST.get_header_accept(request, &accept);
+ 
+  if ((num==0) || (num && accept[0]==REST.type.TEXT_PLAIN))
+  {
+    REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", sht11humi_val);
+
+    REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
+  }
+  else if (num && (accept[0]==REST.type.APPLICATION_JSON))
+  {
+    REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'sht11humi':%d}", sht11humi_val);
+
+    REST.set_response_payload(response, buffer, strlen((char *)buffer));
+  }
+  else
+  {
+    REST.set_response_status(response, REST.status.NOT_ACCEPTABLE);
+    const char *msg = "Supporting content-types text/plain and application/json";
+    REST.set_response_payload(response, msg, strlen(msg));
+  }
+
+  /* A post_handler that handles subscriptions will be called for periodic resources by the REST framework. */
+}
+
+/*
+ * Additionally, a handler function named [resource name]_handler must be implemented for each PERIODIC_RESOURCE.
+ * It will be called by the REST manager process with the defined period.
+ */
+//void
+//sht11humi_periodic_handler(resource_t *r)
+//{
+//   static char content[20];
+//   static int sht11humi_val;
+//   sht11humi_val=sht11_sensor.value(SHT11_SENSOR_HUMIDITY); 
+
+//  PRINTF("SHT11 SENSOR HUMIDITY %d for /%s\n", sht11humi_val, r->url);
+
+  /* Build notification. */
+//  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
+//  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
+//  coap_set_payload(notification, content, snprintf(content, sizeof(content), "SHT11 TEMP %d", sht11humi_val));
+
+  /* Notify the registered observers with the given message type, observe option, and payload. */
+//  REST.notify_subscribers(r, sht11humi_val, notification);
+//}
+#endif
+/************************************************/
 #if REST_RES_EVENT && defined (PLATFORM_HAS_BUTTON)
 /*
  * Example for an event resource.
  * Additionally takes a period parameter that defines the interval to call [name]_periodic_handler().
  * A default post_handler takes care of subscriptions and manages a list of subscribers to notify.
  */
-EVENT_RESOURCE(event, METHOD_GET, "sensors/button", "title=\"Event demo\";obs");
+EVENT_RESOURCE(event, METHOD_GET, "s/button", "title=\"Event demo\";obs");
 
 void
 event_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
@@ -819,7 +835,7 @@ sub_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_s
 /******************************************************************************/
 #if REST_RES_LEDS
 /*A simple actuator example, depending on the color query parameter and post variable mode, corresponding led is activated or deactivated*/
-RESOURCE(leds, METHOD_POST | METHOD_PUT , "actuators/leds", "title=\"LEDs: ?color=r|g|b, POST/PUT mode=on|off\";rt=\"Control\"");
+RESOURCE(leds, METHOD_POST | METHOD_PUT , "a/leds", "title=\"LEDs: ?color=r|g|b, POST/PUT mode=on|off\";rt=\"Control\"");
 
 void
 leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
@@ -869,7 +885,7 @@ leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_
 /******************************************************************************/
 #if REST_RES_TOGGLE
 /* A simple actuator example. Toggles the red led */
-RESOURCE(toggle, METHOD_POST, "actuators/toggle", "title=\"Red LED\";rt=\"Control\"");
+RESOURCE(toggle, METHOD_POST, "a/toggle", "title=\"Red LED\";rt=\"Control\"");
 void
 toggle_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
@@ -924,11 +940,28 @@ light_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred
 /******************************************************************************/
 #if REST_RES_BATTERY && defined (PLATFORM_HAS_BATTERY)
 /* A simple getter example. Returns the reading from light sensor with a simple etag */
-RESOURCE(battery, METHOD_GET, "sensor/battery", "title=\"Battery status\";rt=\"Battery\"");
+RESOURCE(battery, METHOD_GET | METHOD_POST, "s/battery","title=\"Periodic cpu temp\"");
 void
 battery_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-  int battery = battery_sensor.value(0);
+  // const char *period = NULL;
+  // uint32_t period_val;
+  // struct etimer *petimer;
+ //  struct timer *ptimer;
+   uint8_t method=REST.get_method_type(request);
+if (method==METHOD_POST)
+{
+ // REST.get_post_variable(request, "period", &period);
+ // period_val=atoi(period);
+ // periodic_resource_battery.period=(uint32_t) (period_val*CLOCK_SECOND);
+//  petimer=&(periodic_resource_battery.periodic_timer);
+//  ptimer=&(petimer->timer);
+//  ptimer->interval=periodic_resource_battery.period;
+}
+else
+{
+  //double battery_ind=battery_indicator();
+int battery_val=battery_sensor.value(0);
 
   const uint16_t *accept = NULL;
   int num = REST.get_header_accept(request, &accept);
@@ -936,14 +969,14 @@ battery_handler(void* request, void* response, uint8_t *buffer, uint16_t preferr
   if ((num==0) || (num && accept[0]==REST.type.TEXT_PLAIN))
   {
     REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
-    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", battery);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "%d", battery_val);
 
     REST.set_response_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
   }
   else if (num && (accept[0]==REST.type.APPLICATION_JSON))
   {
     REST.set_header_content_type(response, REST.type.APPLICATION_JSON);
-    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'battery':%d}", battery);
+    snprintf((char *)buffer, REST_MAX_CHUNK_SIZE, "{'battery':%d}", battery_val);
 
     REST.set_response_payload(response, buffer, strlen((char *)buffer));
   }
@@ -954,7 +987,33 @@ battery_handler(void* request, void* response, uint8_t *buffer, uint16_t preferr
     REST.set_response_payload(response, msg, strlen(msg));
   }
 }
-#endif /* PLATFORM_HAS_BATTERY */
+}
+//void
+//battery_periodic_handler(resource_t *r)
+//{
+//   static char content[20];
+   //double battery_ind=battery_indicator();
+//  int battery_val=battery_sensor.value(0);
+
+
+ // PRINTF("Battery voltage %.2lf  V for /%s\n", battery_ind, r->url);
+
+  /* Build notification. */
+//  coap_packet_t notification[1]; /* This way the packet can be treated as pointer as usual. */
+//  coap_init_message(notification, COAP_TYPE_NON, REST.status.OK, 0 );
+//  coap_set_payload(notification, content, snprintf(content, sizeof(content), "BATTERY %d", battery_val));
+
+  /* Notify the registered observers with the given message type, observe option, and payload. */
+//  REST.notify_subscribers(r, battery_val, notification);
+  
+//}
+#endif
+double battery_indicator()
+{
+int battery_val=battery_sensor.value(0);
+double a=battery_val*1.6/4096;
+return(a);
+}
 
 /*************************************************************/
 /*******************************************************/
@@ -1026,7 +1085,6 @@ AUTOSTART_PROCESSES(&rest_server_example);
 PROCESS_THREAD(rest_server_example, ev, data)
 {
   PROCESS_BEGIN();
-
   PRINTF("Starting Erbium Example Server\n");
 
 #ifdef RF_CHANNEL
@@ -1046,10 +1104,10 @@ PROCESS_THREAD(rest_server_example, ev, data)
   set_global_address();
   configure_routing();
 #endif
-
+PRINTF("Routing ok \n");
   /* Initialize the REST engine. */
   rest_init_engine();
-
+PRINTF("REST engine ok \n");
   /* Activate the application-specific resources. */
 #if REST_RES_HELLO
   rest_activate_resource(&resource_helloworld);
@@ -1090,29 +1148,28 @@ PROCESS_THREAD(rest_server_example, ev, data)
 #endif
 #if defined (PLATFORM_HAS_BATTERY) && REST_RES_BATTERY
   SENSORS_ACTIVATE(battery_sensor);
+  //rest_activate_periodic_resource(&periodic_resource_battery);
   rest_activate_resource(&resource_battery);
-#endif
-
-#if defined (PLATFORM_HAS_TEMP_SENSOR) && REST_RES_TEMP
- SENSORS_ACTIVATE(battery_sensor);
- rest_activate_periodic_resource(&periodic_resource_temp);
-#endif
-
-
-#if defined (PLATFORM_HAS_HUMIDITY_SENSOR) && REST_RES_HUMIDITY
- SENSORS_ACTIVATE(battery_sensor);
- rest_activate_periodic_resource(&periodic_resource_humidity);
 #endif
 
 #if defined (PLATFORM_HAS_CPU_TEMP_SENSOR) && REST_RES_CPU_TEMP
  SENSORS_ACTIVATE(temperature_sensor);
- rest_activate_periodic_resource(&periodic_resource_cputemp);
+ //rest_activate_periodic_resource(&periodic_resource_cputemp);
+  rest_activate_resource(&resource_cputemp);
 #endif
+  
 
 #if defined (PLATFORM_HAS_SHT11) && REST_RES_SHT11_TEMP
  SENSORS_ACTIVATE(sht11_sensor);
- rest_activate_periodic_resource(&periodic_resource_sht11temp);
+// rest_activate_periodic_resource(&periodic_resource_sht11temp);
+  rest_activate_resource(&resource_sht11temp);
 #endif
+#if defined (PLATFORM_HAS_SHT11) && REST_RES_SHT11_HUMI
+ SENSORS_ACTIVATE(sht11_sensor);
+ //rest_activate_periodic_resource(&periodic_resource_sht11humi);
+  rest_activate_resource(&resource_sht11humi);
+#endif
+
 
 #if defined (PLATFORM_HAS_RADIO) && REST_RES_RADIO
   SENSORS_ACTIVATE(radio_sensor);
